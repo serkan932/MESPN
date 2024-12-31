@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mes Amis</title>
+</head>
+<body>
+    <h1>Mes Amis</h1>
+    <ul>
+        {% for friend in friends %}
+            <li>
+                {{ friend.username }}
+                <form method="POST" action="{{ url_for('start_conversation', friend_id=friend.id) }}">
+                    <button type="submit">Démarrer une conversation</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('index') }}">Retour à l'accueil</a>
+</body>
+</html>

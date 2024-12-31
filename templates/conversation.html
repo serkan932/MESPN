@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conversation</title>
+</head>
+<body>
+    <h1>Conversation avec {{ conversation.user_2.username if conversation.user_1_id == current_user.id else conversation.user_1.username }}</h1>
+    <ul>
+        {% for message in messages %}
+            <li>
+                <strong>{{ message.sender.username }} :</strong> {{ message.content }} ({{ message.timestamp }})
+            </li>
+        {% endfor %}
+    </ul>
+    <form method="POST" action="{{ url_for('conversation', conversation_id=conversation.id) }}">
+        <textarea name="content" placeholder="Votre message"></textarea>
+        <button type="submit">Envoyer</button>
+    </form>
+    <a href="{{ url_for('friends') }}">Retour aux amis</a>
+</body>
+</html>

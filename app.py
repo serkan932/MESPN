@@ -120,6 +120,65 @@ def respond_to_request(request_id):
     db.session.commit()
     return redirect(url_for('friend_requests'))
 
+@app.route('/friends', methods=['GET'])
+@login_required
+def friends():
+    # Obtenez la liste des amis en fonction des relations d'amitié
+    friendships = Friend.query.filter_by(user_id=current_user.id).all()
+    friends = [User.query.get(friendship.friend_id) for friendship in friendships]
+    return render_template('friends.html', friends=friends)
+
+@app.route('/start_conversation/<int:friend_id>', methods=['POST'])
+@login_required
+def start_conversation(friend_id):
+    # Vérifiez que l'ami existe et qu'il est dans la liste des amis
+    friend = User.query.get(friend_id)
+    if not friend:
+        return "Erreur : Cet utilisateur n'existe pas.", 404
+
+    # Vérifiez si une conversation existe déjà entre ces deux utilisateurs
+    existing_conversation = Conversation.query.filter(
+        ((Conversation.user_1_id == current_user.id) & (Conversation.user_2_id == friend_id)) |
+        ((Conversation.user_1_id == friend_id) & (Conversation.user_2_id == current_user.id))
+    ).first()
+
+    if existing_conversation:
+        return redirect(url_for('conversation', conversation_id=existing_conversation.id))
+
+    # Créez une nouvelle conversation
+    new_conversation = Conversation(user_1_id=current_user.id, user_2_id=friend_id)
+    db.session.add(new_conversation)
+    db.session.commit()
+
+    return redirect(url_for('conversation', conversation_id=new_conversation.id))
+
+@app.route('/conversation/<int:conversation_id>', methods=['GET', 'POST'])
+@login_required
+def conversation(conversation_id):
+    conversation = Conversation.query.get(conversation_id)
+
+    # Vérifiez que l'utilisateur fait partie de la conversation
+    if not (conversation.user_1_id == current_user.id or conversation.user_2_id == current_user.id):
+        return "Erreur : Vous n'avez pas accès à cette conversation.", 403
+
+    if request.method == 'POST':
+        content = request.form['content']
+        if not content:
+            return "Erreur : Le message ne peut pas être vide.", 400
+
+        # Créez un nouveau message
+        new_message = Message(
+            conversation_id=conversation.id,
+            sender_id=current_user.id,
+            content=content
+        )
+        db.session.add(new_message)
+        db.session.commit()
+
+    # Récupérez les messages de la conversation
+    messages = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.timestamp).all()
+    return render_template('conversation.html', conversation=conversation, messages=messages)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

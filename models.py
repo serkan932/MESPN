@@ -14,6 +14,9 @@ class Conversation(db.Model):
     user_2_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     last_message = db.Column(db.String(500))
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    # Relations pour accéder aux utilisateurs
+    user_1 = db.relationship('User', foreign_keys=[user_1_id])
+    user_2 = db.relationship('User', foreign_keys=[user_2_id])
 
 class FriendRequest(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -35,3 +38,15 @@ class Friend(db.Model):
     # Relations pour accéder aux utilisateurs
     user = db.relationship('User', foreign_keys=[user_id])
     friend = db.relationship('User', foreign_keys=[friend_id])
+
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    content = db.Column(db.String(500), nullable=False)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relations pour accéder à l'expéditeur
+    sender = db.relationship('User', foreign_keys=[sender_id])
+    conversation = db.relationship('Conversation', foreign_keys=[conversation_id])
