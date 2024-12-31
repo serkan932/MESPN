@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandes d'amis</title>
+</head>
+<body>
+    <h1>Demandes d'amis reçues</h1>
+    <ul>
+        {% for req in requests %}
+            <li>
+                Demande de {{ req.sender.username }}
+                <form method="POST" action="{{ url_for('respond_to_request', request_id=req.id) }}">
+                    <button type="submit" name="action" value="accept">Accepter</button>
+                    <button type="submit" name="action" value="reject">Refuser</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+    <p><a href="{{ url_for('index') }}">Retour à l'accueil</a></p>
+</body>
+</html>

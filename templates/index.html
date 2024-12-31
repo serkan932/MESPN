@@ -9,15 +9,24 @@
     <h1>Bienvenue, {{ user.username }}</h1>
     <a href="{{ url_for('logout') }}">Déconnexion</a>
 
-    <h2>Amis</h2>
+    <h2>Gestion des Amis</h2>
+    <!-- Lien pour accéder à la page d'ajout d'amis -->
+    <a href="{{ url_for('add_friend') }}">Ajouter un ami</a>
+
+    <!-- Liste déroulante pour interagir avec des amis existants -->
     <form method="POST" action="{{ url_for('add_friend') }}">
-        <select name="friend_id">
+        <label for="friend_id">Ajouter un ami depuis la liste :</label>
+        <select name="friend_id" id="friend_id">
             {% for friend in friends %}
                 <option value="{{ friend.id }}">{{ friend.username }}</option>
             {% endfor %}
         </select>
-        <button type="submit">Ajouter un ami</button>
+        <button type="submit">Envoyer la demande</button>
     </form>
+
+    <h2>Demandes d'amis</h2>
+    <a href="{{ url_for('friend_requests') }}">Voir les demandes d'amis reçues</a>
+
 
     <h2>Conversations</h2>
     <ul>
@@ -25,7 +34,8 @@
             <li>
                 <a href="/conversation/{{ conversation.id }}">
                     Conversation avec {{ conversation.user_2_id if conversation.user_1_id == user.id else conversation.user_1_id }}
-                </a> (Dernier message : {{ conversation.last_message }})
+                </a> 
+                (Dernier message : {{ conversation.last_message }})
             </li>
         {% endfor %}
     </ul>
