@@ -1,21 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Conversation</title>
-</head>
-<body>
-    <h1>Conversation avec {{ conversation.user_2.username if conversation.user_1_id == current_user.id else conversation.user_1.username }}</h1>
-    <ul>
-        {% for message in messages %}
-            <li>
-                <strong>{{ message.sender.username }} :</strong> {{ message.content }} ({{ message.timestamp }})
-            </li>
-        {% endfor %}
-    </ul>
-    <form method="POST" action="{{ url_for('conversation', conversation_id=conversation.id) }}">
-        <textarea name="content" placeholder="Votre message"></textarea>
-        <button type="submit">Envoyer</button>
-    </form>
-    <a href="{{ url_for('friends') }}">Retour aux amis</a>
-</body>
-</html>
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+<script>
+    const socket = io();
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const room = "{{ conversation.id }}";
+        const messageList = document.getElementById('messages');
+        const messageForm = document.getElementById('messageForm');
+        const messageInput = document.getElementById('messageInput');
+
+        // Rejoindre une salle
+        socket.emit('join', { room: room });
+
+        // Écouter les messages entrants
+        socket.on('message', (data) => {
+            const li = document.createElement('li');
+            li.textContent = `${data.sender}: ${data.message}`;
+            messageList.appendChild(li);
+        });
+
+        // Envoyer un message
+        messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = messageInput.value;
+            socket.emit('message', { room: room, message: message });
+            messageInput.value = '';
+        });
+    });
+</script>
+
+<ul id="messages">
+    {% for message in messages %}
+        <li><strong>{{ message.sender.username }}:</strong> {{ message.content }}</li>
+    {% endfor %}
+</ul>
+<form id="messageForm">
+    <input id="messageInput" type="text" placeholder="Votre message" required>
+    <button type="submit">Envoyer</button>
+</form>
