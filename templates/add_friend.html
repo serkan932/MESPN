@@ -1,17 +1,129 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajouter un ami</title>
+    <!-- Lien vers Bootstrap pour une meilleure mise en page -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #343a40;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #007bff;
+        }
+
+        #success-message, #error-message {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Ajouter un ami</h1>
-    <form method="POST" action="{{ url_for('add_friend') }}">
-        <label for="friend_username">Nom d'utilisateur de l'ami :</label>
-        <input type="text" id="friend_username" name="friend_username" placeholder="Nom d'utilisateur" required>
-        <button type="submit">Envoyer la demande</button>
-    </form>
-    <p><a href="{{ url_for('index') }}">Retour à l'accueil</a></p>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="form-container">
+                    <h1>Ajouter un ami</h1>
+                    <!-- Message de succès ou d'erreur -->
+                    <div id="success-message" class="alert alert-success">Demande d'ami envoyée avec succès.</div>
+                    <div id="error-message" class="alert alert-danger">Erreur : le nom d'utilisateur est invalide.</div>
+
+                    <!-- Formulaire d'ajout d'ami -->
+                    <form id="addFriendForm" method="POST" action="{{ url_for('add_friend') }}">
+                        <div class="mb-3">
+                            <label for="friend_username" class="form-label">Nom d'utilisateur de l'ami :</label>
+                            <input type="text" class="form-control" id="friend_username" name="friend_username" placeholder="Nom d'utilisateur" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Envoyer la demande</button>
+                    </form>
+
+                    <!-- Lien de retour à l'accueil -->
+                    <p class="text-center mt-3"><a href="{{ url_for('index') }}" class="btn btn-link">Retour à l'accueil</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript pour interactivité -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('addFriendForm');
+            const friendUsername = document.getElementById('friend_username');
+            const successMessage = document.getElementById('success-message');
+            const errorMessage = document.getElementById('error-message');
+
+            // Validation et soumission du formulaire
+            form.addEventListener('submit', function (e) {
+                e.preventDefault(); // Empêche l'envoi réel du formulaire
+
+                const username = friendUsername.value.trim();
+
+                // Valider que le nom d'utilisateur n'est pas vide
+                if (username === '' || username.length < 3) {
+                    showError('Veuillez entrer un nom d’utilisateur valide d’au moins 3 caractères.');
+                    return;
+                }
+
+                // Requête pour vérifier si l'utilisateur existe via l'API Flask
+                fetch('{{ url_for("add_friend") }}', {
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        'friend_username': username
+                    }),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                })
+                .then(response => response.text())
+                .then(data => {
+                    if (data.includes("Demande d'ami envoyée avec succès")) {
+                        showSuccess();
+                    } else {
+                        showError(data);  // Affiche le message d'erreur provenant du backend
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    showError("Erreur lors de la connexion au serveur.");
+                });
+            });
+
+            // Fonction pour afficher un message de succès
+            function showSuccess() {
+                successMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+                friendUsername.value = '';  // Réinitialiser le champ du nom d'utilisateur
+            }
+
+            // Fonction pour afficher un message d'erreur
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+        });
+    </script>
+
+    <!-- Lien vers Bootstrap JavaScript (nécessaire pour les composants interactifs) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
