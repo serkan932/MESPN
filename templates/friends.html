@@ -9,8 +9,11 @@
         {% for friend in friends %}
             <li>
                 {{ friend.username }}
-                <form method="POST" action="{{ url_for('start_conversation', friend_id=friend.id) }}">
+                <form method="POST" action="{{ url_for('start_conversation', friend_id=friend.id) }}" style="display: inline;">
                     <button type="submit">Démarrer une conversation</button>
+                </form>
+                <form method="POST" action="{{ url_for('remove_friend', friend_id=friend.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Supprimer</button>
                 </form>
             </li>
         {% endfor %}
@@ -18,3 +21,4 @@
     <a href="{{ url_for('index') }}">Retour à l'accueil</a>
 </body>
 </html>
+
