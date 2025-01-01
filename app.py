@@ -17,18 +17,28 @@ socketio = SocketIO(app)  # Initialise SocketIO pour les WebSockets
 # Gestion des utilisateurs connectés
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))  # Correctif pour éviter LegacyAPIWarning
 
 # Routes principales
 @app.route('/')
 @login_required
 def index():
-    friends = User.query.filter(User.id != current_user.id).all()
     conversations = Conversation.query.filter(
         (Conversation.user_1_id == current_user.id) | 
         (Conversation.user_2_id == current_user.id)
     ).all()
-    return render_template('index.html', user=current_user, friends=friends, conversations=conversations)
+
+    conversation_data = []
+    for conversation in conversations:
+        other_user = conversation.user_1 if conversation.user_2_id == current_user.id else conversation.user_2
+        unread_count = Message.query.filter_by(conversation_id=conversation.id, is_read=False, sender_id=other_user.id).count()
+        conversation_data.append({
+            'conversation': conversation,
+            'other_user': other_user,
+            'unread_count': unread_count
+        })
+
+    return render_template('index.html', user=current_user, conversation_data=conversation_data)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -74,7 +84,7 @@ def register():
 @login_required
 def friends():
     friendships = Friend.query.filter_by(user_id=current_user.id).all()
-    friends = [User.query.get(friendship.friend_id) for friendship in friendships]
+    friends = [db.session.get(User, friendship.friend_id) for friendship in friendships]
     return render_template('friends.html', friends=friends)
 
 @app.route('/add_friend', methods=['GET', 'POST'])
@@ -117,7 +127,7 @@ def friend_requests():
 @login_required
 def respond_to_request(request_id):
     action = request.form['action']
-    friend_request = FriendRequest.query.get(request_id)
+    friend_request = db.session.get(FriendRequest, request_id)
 
     if not friend_request or friend_request.receiver_id != current_user.id:
         return "Erreur : Demande non valide.", 404
@@ -134,11 +144,20 @@ def respond_to_request(request_id):
     db.session.commit()
     return redirect(url_for('friend_requests'))
 
+@app.route('/search_users', methods=['GET', 'POST'])
+@login_required
+def search_users():
+    if request.method == 'POST':
+        query = request.form['query']
+        users = User.query.filter(User.username.contains(query), User.id != current_user.id).all()
+        return render_template('search_results.html', users=users)
+    return render_template('search_users.html')
+
 # Conversations
 @app.route('/start_conversation/<int:friend_id>', methods=['POST'])
 @login_required
 def start_conversation(friend_id):
-    friend = User.query.get(friend_id)
+    friend = db.session.get(User, friend_id)
     if not friend:
         return "Erreur : Cet utilisateur n'existe pas.", 404
 
@@ -159,7 +178,10 @@ def start_conversation(friend_id):
 @app.route('/conversation/<int:conversation_id>', methods=['GET', 'POST'])
 @login_required
 def conversation(conversation_id):
-    conversation = Conversation.query.get(conversation_id)
+    conversation = db.session.get(Conversation, conversation_id)
+
+    if not conversation:
+        return "Erreur : Cette conversation n'existe pas.", 404
 
     if not (conversation.user_1_id == current_user.id or conversation.user_2_id == current_user.id):
         return "Erreur : Vous n'avez pas accès à cette conversation.", 403
@@ -200,8 +222,8 @@ def handle_message(data):
 # Serveur UDP
 def start_udp_server():
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    udp_socket.bind(("0.0.0.0", 12345))
-    print("Serveur UDP en écoute sur le port 12345")
+    udp_socket.bind(("0.0.0.0", 12346))  # Port ajusté pour éviter les conflits
+    print("Serveur UDP en écoute sur le port 12346")
 
     while True:
         data, addr = udp_socket.recvfrom(1024)

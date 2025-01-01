@@ -9,11 +9,9 @@
     <h1>Bienvenue, {{ user.username }}</h1>
     <a href="{{ url_for('logout') }}">Déconnexion</a>
 
+    <!-- Gestion des amis -->
     <h2>Gestion des Amis</h2>
-    <!-- Lien pour accéder à la page d'ajout d'amis -->
     <a href="{{ url_for('add_friend') }}">Ajouter un ami</a>
-
-    <!-- Liste déroulante pour interagir avec des amis existants -->
     <form method="POST" action="{{ url_for('add_friend') }}">
         <label for="friend_id">Ajouter un ami depuis la liste :</label>
         <select name="friend_id" id="friend_id">
@@ -30,16 +28,34 @@
     <h2>Mes Amis</h2>
     <a href="{{ url_for('friends') }}">Voir mes amis</a>
 
-
-
+    <!-- Gestion des conversations -->
     <h2>Conversations</h2>
+    <!-- Bouton pour démarrer une nouvelle discussion -->
+    <button onclick="document.getElementById('newDiscussion').style.display='block'">Nouvelle Discussion</button>
+    <div id="newDiscussion" style="display:none;">
+        <form method="POST" action="{{ url_for('start_conversation', friend_id=0) }}">
+            <label for="friend_id">Choisissez un ami :</label>
+            <select name="friend_id" id="friend_id" required>
+                {% for friend in friends %}
+                    <option value="{{ friend.id }}">{{ friend.username }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Démarrer</button>
+        </form>
+        <button onclick="document.getElementById('newDiscussion').style.display='none'">Annuler</button>
+    </div>
+
+    <!-- Liste des conversations existantes -->
     <ul>
-        {% for conversation in conversations %}
+        {% for data in conversation_data %}
             <li>
-                <a href="/conversation/{{ conversation.id }}">
-                    Conversation avec {{ conversation.user_2_id if conversation.user_1_id == user.id else conversation.user_1_id }}
-                </a> 
-                (Dernier message : {{ conversation.last_message }})
+                <a href="{{ url_for('conversation', conversation_id=data.conversation.id) }}">
+                    Conversation avec {{ data.other_user.username }}
+                </a>
+                {% if data.unread_count > 0 %}
+                    <span class="badge">{{ data.unread_count }}</span>
+                {% endif %}
+                <p>Dernier message : {{ data.conversation.last_message }}</p>
             </li>
         {% endfor %}
     </ul>

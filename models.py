@@ -45,6 +45,7 @@ class Message(db.Model):
     conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.String(500), nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     # Relations pour accéder à l'expéditeur
