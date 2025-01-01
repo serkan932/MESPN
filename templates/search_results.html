@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Résultats de recherche</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 20px auto;
+            max-width: 600px;
+        }
+
+        li {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px 0;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        button {
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin: 20px auto;
+            text-decoration: none;
+            color: #4a90e2;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: #357ABD;
+        }
+
+        .container {
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Résultats de recherche</h1>
+        <ul>
+            {% for user in users %}
+            <li>
+                <span>{{ user.username }}</span>
+                <form method="POST" action="{{ url_for('add_friend') }}" style="display:inline;">
+                    <input type="hidden" name="friend_username" value="{{ user.username }}">
+                    <button type="submit">Ajouter comme ami</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+        <a href="{{ url_for('index') }}">Retour à l'accueil</a>
+    </div>
+
+</body>
+</html>

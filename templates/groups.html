@@ -4,33 +4,165 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes Groupes</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+            margin-bottom: 30px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            display: flex;
+            flex-direction: column;
+            background-color: #fafafa;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        li strong {
+            font-size: 1.2rem;
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+
+        li a {
+            color: #4a90e2;
+            text-decoration: none;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        li a:hover {
+            text-decoration: underline;
+        }
+
+        .admin-actions {
+            margin-top: 20px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px; /* Espace entre les boutons */
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 8px 15px;
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+
+        .action-buttons form {
+            display: inline-block;
+        }
+
+        .action-buttons form button {
+            background-color: #e74c3c;
+        }
+
+        .action-buttons form button:hover {
+            background-color: #c0392b;
+        }
+
+        .action-buttons a {
+            padding: 8px 15px;
+            background-color: #27ae60;
+            color: #fff;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .action-buttons a:hover {
+            background-color: #2ecc71;
+        }
+
+        .return-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.2rem;
+        }
+
+        .return-link a {
+            color: #4a90e2;
+            text-decoration: none;
+        }
+
+        .return-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>Mes Groupes</h1>
-    <ul>
-        {% for group in groups %}
-            <li>
-                <strong>{{ group.name }}</strong> - Administré par {{ group.admin.username }}
-                <a href="{{ url_for('group_chat', group_id=group.id) }}">Accéder au groupe</a>
-                
-                <!-- Si l'utilisateur est l'administrateur -->
-                {% if group.admin_id == user.id %}
-                    <!-- Bouton pour modifier le groupe -->
-                    <a href="{{ url_for('edit_group', group_id=group.id) }}">Modifier</a>
+    <div class="container">
+        <h1>Mes Groupes</h1>
+        <ul>
+            {% for group in groups %}
+                <li>
+                    <strong>{{ group.name }}</strong> - Administré par {{ group.admin.username }}
+                    <a href="{{ url_for('group_chat', group_id=group.id) }}">Accéder au groupe</a>
                     
-                    <!-- Bouton pour supprimer le groupe -->
-                    <form method="POST" action="{{ url_for('delete_group', group_id=group.id) }}" style="display:inline;">
-                        <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer ce groupe ?')">Supprimer</button>
-                    </form>
-                {% endif %}
-                
-                <!-- Bouton pour quitter le groupe -->
-                <form method="POST" action="{{ url_for('leave_group', group_id=group.id) }}" style="display:inline;">
-                    <button type="submit" onclick="return confirm('Voulez-vous vraiment quitter ce groupe ?')">Quitter</button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
-    <a href="{{ url_for('index') }}">Retour</a>
+                    <div class="admin-actions">
+                        <!-- Si l'utilisateur est l'administrateur -->
+                        {% if group.admin_id == user.id %}
+                            <div class="action-buttons">
+                                <!-- Bouton pour modifier le groupe -->
+                                <a href="{{ url_for('edit_group', group_id=group.id) }}">Modifier</a>
+                                
+                                <!-- Bouton pour supprimer le groupe -->
+                                <form method="POST" action="{{ url_for('delete_group', group_id=group.id) }}">
+                                    <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer ce groupe ?')">Supprimer</button>
+                                </form>
+                            </div>
+                        {% endif %}
+
+                        <div class="action-buttons">
+                            <!-- Bouton pour quitter le groupe -->
+                            <form method="POST" action="{{ url_for('leave_group', group_id=group.id) }}">
+                                <button type="submit" onclick="return confirm('Voulez-vous vraiment quitter ce groupe ?')">Quitter</button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+        
+        <div class="return-link">
+            <a href="{{ url_for('index') }}">Retour à l'accueil</a>
+        </div>
+    </div>
 </body>
 </html>
