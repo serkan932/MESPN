@@ -12,6 +12,22 @@
             <li>
                 <strong>{{ group.name }}</strong> - Administré par {{ group.admin.username }}
                 <a href="{{ url_for('group_chat', group_id=group.id) }}">Accéder au groupe</a>
+                
+                <!-- Si l'utilisateur est l'administrateur -->
+                {% if group.admin_id == user.id %}
+                    <!-- Bouton pour modifier le groupe -->
+                    <a href="{{ url_for('edit_group', group_id=group.id) }}">Modifier</a>
+                    
+                    <!-- Bouton pour supprimer le groupe -->
+                    <form method="POST" action="{{ url_for('delete_group', group_id=group.id) }}" style="display:inline;">
+                        <button type="submit" onclick="return confirm('Voulez-vous vraiment supprimer ce groupe ?')">Supprimer</button>
+                    </form>
+                {% endif %}
+                
+                <!-- Bouton pour quitter le groupe -->
+                <form method="POST" action="{{ url_for('leave_group', group_id=group.id) }}" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Voulez-vous vraiment quitter ce groupe ?')">Quitter</button>
+                </form>
             </li>
         {% endfor %}
     </ul>

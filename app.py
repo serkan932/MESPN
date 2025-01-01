@@ -279,7 +279,8 @@ def create_group():
 @login_required
 def groups():
     groups = Group.query.join(GroupMember).filter(GroupMember.user_id == current_user.id).all()
-    return render_template('groups.html', groups=groups)
+    return render_template('groups.html', groups=groups, user=current_user)
+
 
 @app.route('/group/<int:group_id>', methods=['GET', 'POST'])
 @login_required
@@ -305,6 +306,62 @@ def group_chat(group_id):
     messages = Message.query.filter_by(group_id=group_id).order_by(Message.timestamp).all()
     return render_template('group_chat.html', group=group, messages=messages)
 
+@app.route('/group/<int:group_id>/leave', methods=['POST'])
+@login_required
+def leave_group(group_id):
+    group = db.session.get(Group, group_id)
+    if not group:
+        return "Erreur : Groupe introuvable.", 404
+
+    membership = GroupMember.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+    if not membership:
+        return "Erreur : Vous n'êtes pas membre de ce groupe.", 403
+
+    db.session.delete(membership)
+
+    # Vérifiez si l'utilisateur est l'administrateur
+    if group.admin_id == current_user.id:
+        remaining_members = GroupMember.query.filter_by(group_id=group_id).all()
+        if not remaining_members:
+            # Supprimez le groupe s'il n'a plus de membres
+            db.session.delete(group)
+
+    db.session.commit()
+    return redirect(url_for('groups'))
+
+@app.route('/group/<int:group_id>/delete', methods=['POST'])
+@login_required
+def delete_group(group_id):
+    group = db.session.get(Group, group_id)
+    if not group:
+        return "Erreur : Groupe introuvable.", 404
+
+    if group.admin_id != current_user.id:
+        return "Erreur : Seul l'administrateur peut supprimer ce groupe.", 403
+
+    # Supprimez tous les membres et le groupe
+    GroupMember.query.filter_by(group_id=group_id).delete()
+    db.session.delete(group)
+    db.session.commit()
+    return redirect(url_for('groups'))
+
+@app.route('/group/<int:group_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_group(group_id):
+    group = db.session.get(Group, group_id)
+    if not group:
+        return "Erreur : Groupe introuvable.", 404
+
+    if group.admin_id != current_user.id:
+        return "Erreur : Seul l'administrateur peut modifier ce groupe.", 403
+
+    if request.method == 'POST':
+        new_name = request.form['group_name']
+        group.name = new_name
+        db.session.commit()
+        return redirect(url_for('groups'))
+
+    return render_template('edit_group.html', group=group)
 
 if __name__ == '__main__':
     with app.app_context():

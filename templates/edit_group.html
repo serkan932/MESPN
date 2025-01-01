@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier le groupe</title>
+</head>
+<body>
+    <h1>Modifier le groupe : {{ group.name }}</h1>
+    <form method="POST">
+        <label for="group_name">Nouveau nom du groupe :</label>
+        <input type="text" id="group_name" name="group_name" value="{{ group.name }}" required>
+        <button type="submit">Enregistrer</button>
+    </form>
+    <a href="{{ url_for('groups') }}">Annuler</a>
+</body>
+</html>
