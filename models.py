@@ -42,12 +42,29 @@ class Friend(db.Model):
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), nullable=False)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversation.id'), nullable=True)  # Message privé
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=True)  # Message de groupe
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.String(500), nullable=False)
     is_read = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
 
-    # Relations pour accéder à l'expéditeur
+    # Relations
     sender = db.relationship('User', foreign_keys=[sender_id])
     conversation = db.relationship('Conversation', foreign_keys=[conversation_id])
+    group = db.relationship('Group', foreign_keys=[group_id])
+
+
+class Group(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    # Relation vers l'utilisateur administrateur
+    admin = db.relationship('User', foreign_keys=[admin_id])
+
+
+class GroupMember(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

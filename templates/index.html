@@ -59,5 +59,12 @@
             </li>
         {% endfor %}
     </ul>
+
+    <!-- Gestion des groupes -->
+    <h2>Groupes</h2>
+    <!-- Lien pour créer un groupe -->
+    <a href="{{ url_for('create_group') }}">Créer un groupe</a>
+    <!-- Lien pour afficher les groupes -->
+    <a href="{{ url_for('groups') }}">Voir mes groupes</a>
 </body>
 </html>

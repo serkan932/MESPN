@@ -3,7 +3,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, c
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import threading
 import socket
-from models import db, User, Friend, FriendRequest, Conversation, Message
+from models import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'votre_cle_secrete'
@@ -229,6 +229,67 @@ def start_udp_server():
         data, addr = udp_socket.recvfrom(1024)
         print(f"Message reçu de {addr}: {data.decode()}")
         udp_socket.sendto("Message reçu".encode('utf-8'), addr)
+
+
+@app.route('/create_group', methods=['GET', 'POST'])
+@login_required
+def create_group():
+    if request.method == 'POST':
+        group_name = request.form['group_name']
+        friend_ids = request.form.getlist('friends')  # Récupère les ID des amis sélectionnés
+        
+        # Crée le groupe avec l'utilisateur connecté comme admin
+        new_group = Group(name=group_name, admin_id=current_user.id)
+        db.session.add(new_group)
+        db.session.commit()
+        
+        # Ajoute les membres sélectionnés
+        for friend_id in friend_ids:
+            new_member = GroupMember(group_id=new_group.id, user_id=friend_id)
+            db.session.add(new_member)
+        
+        # Ajoute l'utilisateur connecté au groupe en tant que membre
+        admin_member = GroupMember(group_id=new_group.id, user_id=current_user.id)
+        db.session.add(admin_member)
+
+        db.session.commit()
+        return redirect(url_for('groups'))
+    
+    # Récupère les amis de l'utilisateur pour les afficher dans la page de création
+    friendships = Friend.query.filter_by(user_id=current_user.id).all()
+    friends = [db.session.get(User, friendship.friend_id) for friendship in friendships]
+    return render_template('create_group.html', friends=friends)
+
+
+@app.route('/groups', methods=['GET'])
+@login_required
+def groups():
+    groups = Group.query.join(GroupMember).filter(GroupMember.user_id == current_user.id).all()
+    return render_template('groups.html', groups=groups)
+
+@app.route('/group/<int:group_id>', methods=['GET', 'POST'])
+@login_required
+def group_chat(group_id):
+    group = db.session.get(Group, group_id)
+
+    # Vérifiez que l'utilisateur est membre du groupe
+    is_member = GroupMember.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+    if not is_member:
+        return "Erreur : Vous n'êtes pas membre de ce groupe.", 403
+
+    if request.method == 'POST':
+        content = request.form['content']
+        if not content.strip():
+            return "Erreur : Le message ne peut pas être vide.", 400
+
+        # Ajoutez le message au groupe
+        new_message = Message(group_id=group_id, sender_id=current_user.id, content=content)
+        db.session.add(new_message)
+        db.session.commit()
+
+    # Récupérez tous les messages du groupe
+    messages = Message.query.filter_by(group_id=group_id).order_by(Message.timestamp).all()
+    return render_template('group_chat.html', group=group, messages=messages)
 
 
 if __name__ == '__main__':

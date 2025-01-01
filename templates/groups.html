@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Groupes</title>
+</head>
+<body>
+    <h1>Mes Groupes</h1>
+    <ul>
+        {% for group in groups %}
+            <li>
+                <strong>{{ group.name }}</strong> - Administré par {{ group.admin.username }}
+                <a href="{{ url_for('group_chat', group_id=group.id) }}">Accéder au groupe</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('index') }}">Retour</a>
+</body>
+</html>

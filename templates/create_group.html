@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un groupe</title>
+</head>
+<body>
+    <h1>Créer un Groupe</h1>
+    <form method="POST" action="{{ url_for('create_group') }}">
+        <label for="group_name">Nom du Groupe :</label>
+        <input type="text" id="group_name" name="group_name" placeholder="Nom du groupe" required>
+        
+        <h2>Ajouter des amis au groupe</h2>
+        {% for friend in friends %}
+            <div>
+                <input type="checkbox" id="friend_{{ friend.id }}" name="friends" value="{{ friend.id }}">
+                <label for="friend_{{ friend.id }}">{{ friend.username }}</label>
+            </div>
+        {% endfor %}
+        
+        <button type="submit">Créer le groupe</button>
+    </form>
+    <a href="{{ url_for('index') }}">Retour</a>
+</body>
+</html>
