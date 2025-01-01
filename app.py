@@ -12,8 +12,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///messagerie.db'
 db.init_app(app)  # Initialise SQLAlchemy avec l'application Flask
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-socketio = SocketIO(app)  # Initialise SocketIO pour les WebSockets
-
+socketio = SocketIO(app)  # Initialise SocketIO pour les WebSocket
 # Gestion des utilisateurs connectés
 @login_manager.user_loader
 def load_user(user_id):
@@ -116,6 +115,21 @@ def add_friend():
         return f"Demande d'ami envoyée à {friend.username}."
 
     return render_template('add_friend.html')
+
+@app.route('/remove_friend/<int:friend_id>', methods=['POST'])
+@login_required
+def remove_friend(friend_id):
+    friendship = Friend.query.filter_by(user_id=current_user.id, friend_id=friend_id).first()
+    reverse_friendship = Friend.query.filter_by(user_id=friend_id, friend_id=current_user.id).first()
+
+    if not friendship or not reverse_friendship:
+        return "Erreur : Vous n'êtes pas amis avec cet utilisateur.", 404
+
+    db.session.delete(friendship)
+    db.session.delete(reverse_friendship)
+    db.session.commit()
+
+    return redirect(url_for('friends'))
 
 @app.route('/friend_requests', methods=['GET'])
 @login_required

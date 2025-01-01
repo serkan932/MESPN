@@ -27,6 +27,9 @@
 
     <h2>Mes Amis</h2>
     <a href="{{ url_for('friends') }}">Voir mes amis</a>
+    <a href="{{ url_for('friends') }}">Gérer mes amis</a>
+
+    
 
     <!-- Gestion des conversations -->
     <h2>Conversations</h2>
@@ -59,12 +62,5 @@
             </li>
         {% endfor %}
     </ul>
-
-    <!-- Gestion des groupes -->
-    <h2>Groupes</h2>
-    <!-- Lien pour créer un groupe -->
-    <a href="{{ url_for('create_group') }}">Créer un groupe</a>
-    <!-- Lien pour afficher les groupes -->
-    <a href="{{ url_for('groups') }}">Voir mes groupes</a>
 </body>
 </html>
