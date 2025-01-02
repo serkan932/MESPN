@@ -202,6 +202,9 @@ def conversation(conversation_id):
 
     if request.method == 'POST':
         content = request.form['content']
+        if not content.strip():
+            return "Erreur : Le message ne peut pas être vide.", 400
+        
         new_message = Message(
             conversation_id=conversation.id,
             sender_id=current_user.id,
@@ -210,8 +213,16 @@ def conversation(conversation_id):
         db.session.add(new_message)
         db.session.commit()
 
+    # Récupérez tous les messages associés à cette conversation
     messages = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.timestamp).all()
-    return render_template('conversation.html', conversation=conversation, messages=messages)
+
+    return render_template(
+        'conversation.html',
+        conversation=conversation,
+        messages=messages,
+        current_user=current_user  # Passer explicitement current_user
+    )
+
 
 # WebSockets pour les conversations en temps réel
 @socketio.on('join')
