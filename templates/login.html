@@ -118,10 +118,10 @@
         <div class="login-box">
             <h1>Connexion</h1>
             <form method="POST" action="{{ url_for('login') }}">
-                <input type="text" name="username" placeholder="Nom d'utilisateur" required>
+                <input type="text" name="identifier" placeholder="Pseudo, e-mail ou numéro de téléphone" required>
                 <input type="password" name="password" placeholder="Mot de passe" required>
                 <button type="submit">Se connecter</button>
-            </form>
+            </form>            
             <p>Pas encore inscrit ? <a href="{{ url_for('register') }}">Créez un compte ici</a>.</p>
         </div>
     </div>

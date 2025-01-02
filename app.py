@@ -4,7 +4,7 @@ from flask_socketio import SocketIO, emit, join_room, leave_room
 import threading
 import socket
 from models import *
-
+from flask import flash
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'votre_cle_secrete'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///messagerie.db'
@@ -48,13 +48,21 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        identifier = request.form['identifier']  # Peut être email, phone_number ou username
         password = request.form['password']
-        user = User.query.filter_by(username=username).first()
+
+        # Rechercher l'utilisateur par pseudo, e-mail ou numéro de téléphone
+        user = User.query.filter(
+            (User.username == identifier) | 
+            (User.email == identifier) | 
+            (User.phone_number == identifier)
+        ).first()
+
         if user and user.password == password:
             login_user(user)
             return redirect(url_for('index'))
         return "Erreur : Identifiants incorrects"
+
     return render_template('login.html')
 
 @app.route('/logout')
@@ -67,21 +75,27 @@ def logout():
 def register():
     if request.method == 'POST':
         username = request.form['username']
+        email = request.form['email']
+        phone_number = request.form['phone_number']
         password = request.form['password']
 
         # Vérifier si l'utilisateur existe déjà
-        existing_user = User.query.filter_by(username=username).first()
+        existing_user = User.query.filter(
+            (User.username == username) | 
+            (User.email == email) | 
+            (User.phone_number == phone_number)
+        ).first()
+
         if existing_user:
-            return "Erreur : Ce nom d'utilisateur est déjà pris."
+            return "Erreur : Ce pseudo, e-mail ou numéro de téléphone est déjà utilisé."
 
         # Créer un nouvel utilisateur
-        new_user = User(username=username, password=password)
+        new_user = User(username=username, email=email, phone_number=phone_number, password=password)
         db.session.add(new_user)
         db.session.commit()
 
         return redirect(url_for('login'))  # Rediriger vers la page de connexion après l'inscription
 
-    # Si méthode GET, afficher le formulaire d'inscription
     return render_template('register.html')
 
 # Gestion des amis
