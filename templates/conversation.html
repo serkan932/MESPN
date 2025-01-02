@@ -41,24 +41,50 @@
             background-color: #007bff;
             color: white;
         }
+        .message.received .content {
+            background-color: #e0e0e0;
+        }
+        .btn-back {
+            position: absolute;
+            top: 10px;
+            left: -10px;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .btn-back:hover {
+            background-color: #5a6268;
+        }
     </style>
 </head>
 <body>
-    <div class="chat-container">
-        <h2>Conversation avec {{ conversation.user_2.username if conversation.user_1.id == current_user.id else conversation.user_1.username }}</h2>
-        <div class="message-list">
-            {% for message in messages %}
-                <div class="message {{ 'sent' if message.sender.id == current_user.id else 'received' }}">
-                    <div class="username">{{ message.sender.username }}</div>
-                    <div class="content">{{ message.content }}</div>
-                    <div class="timestamp text-muted" style="font-size: 0.8em;">{{ message.timestamp }}</div>
-                </div>
-            {% endfor %}
+    <div class="container mt-4" style="position: relative;">
+        <!-- Bouton retour à l'accueil positionné en haut à gauche -->
+        <a href="{{ url_for('index') }}" class="btn btn-secondary btn-back">Retour à l'accueil</a>
+
+        <div class="chat-container">
+            <h2>Conversation avec {{ conversation.user_2.username if conversation.user_1.id == current_user.id else conversation.user_1.username }}</h2>
+            
+            <!-- Liste des messages -->
+            <div class="message-list">
+                {% for message in messages %}
+                    <div class="message {{ 'sent' if message.sender.id == current_user.id else 'received' }}">
+                        <div class="username">{{ message.sender.username }}</div>
+                        <div class="content">{{ message.content }}</div>
+                        <div class="timestamp text-muted" style="font-size: 0.8em;">{{ message.timestamp }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Formulaire d'envoi de message -->
+            <form action="" method="POST" class="input-group">
+                <input type="text" name="content" class="form-control" placeholder="Tapez votre message" required>
+                <button type="submit" class="btn btn-primary">Envoyer</button>
+            </form>
         </div>
-        <form action="" method="POST" class="input-group">
-            <input type="text" name="content" class="form-control" placeholder="Tapez votre message" required>
-            <button type="submit" class="btn btn-primary">Envoyer</button>
-        </form>
     </div>
 </body>
 </html>

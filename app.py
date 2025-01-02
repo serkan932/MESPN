@@ -31,13 +31,19 @@ def index():
     for conversation in conversations:
         other_user = conversation.user_1 if conversation.user_2_id == current_user.id else conversation.user_2
         unread_count = Message.query.filter_by(conversation_id=conversation.id, is_read=False, sender_id=other_user.id).count()
+        
+        # Récupérer le dernier message de la conversation
+        last_message = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.timestamp.desc()).first()
+
         conversation_data.append({
             'conversation': conversation,
             'other_user': other_user,
-            'unread_count': unread_count
+            'unread_count': unread_count,
+            'last_message': last_message  # Ajouter le dernier message à la liste des données
         })
 
     return render_template('index.html', user=current_user, conversation_data=conversation_data)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -94,10 +100,10 @@ def add_friend():
         friend = User.query.filter_by(username=friend_username).first()
 
         if not friend:
-            return "Erreur : Cet utilisateur n'existe pas.", 404
+            return "Cet utilisateur n'existe pas.", 404
 
         if friend.id == current_user.id:
-            return "Erreur : Vous ne pouvez pas vous ajouter vous-même."
+            return "Vous ne pouvez pas vous ajouter vous-même."
 
         existing_request = FriendRequest.query.filter_by(
             sender_id=current_user.id, 
@@ -173,7 +179,7 @@ def search_users():
 def start_conversation(friend_id):
     friend = db.session.get(User, friend_id)
     if not friend:
-        return "Erreur : Cet utilisateur n'existe pas.", 404
+        return "Cet utilisateur n'existe pas.", 404
 
     existing_conversation = Conversation.query.filter(
         ((Conversation.user_1_id == current_user.id) & (Conversation.user_2_id == friend_id)) |
@@ -213,13 +219,25 @@ def conversation(conversation_id):
         db.session.add(new_message)
         db.session.commit()
 
+    # Marquer tous les messages non lus comme lus pour l'utilisateur actuel
+    unread_messages = Message.query.filter_by(conversation_id=conversation.id, is_read=False).all()
+    for msg in unread_messages:
+        # Ne marquez comme "lu" que les messages envoyés par l'autre utilisateur
+        if msg.sender_id != current_user.id:
+            msg.is_read = True
+    db.session.commit()
+
     # Récupérez tous les messages associés à cette conversation
     messages = Message.query.filter_by(conversation_id=conversation.id).order_by(Message.timestamp).all()
+
+    # Comptez le nombre de messages non lus
+    unread_count = Message.query.filter_by(conversation_id=conversation.id, is_read=False).count()
 
     return render_template(
         'conversation.html',
         conversation=conversation,
         messages=messages,
+        unread_count=unread_count,  # Passez le nombre de messages non lus à la page
         current_user=current_user  # Passer explicitement current_user
     )
 

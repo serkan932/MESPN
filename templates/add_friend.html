@@ -32,6 +32,21 @@
 
         #success-message, #error-message {
             display: none;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;  /* Rendre le texte en gras */
+        }
+
+        /* Styles spécifiques pour les messages de succès et d'erreur */
+        .success-background {
+            background-color: #0b7b25 !important;  /* Vert pour succès */
+            color: white;
+        }
+
+        .error-background {
+            background-color: #dc3545 !important;  /* Rouge pour erreur */
+            color: white;
         }
     </style>
 </head>
@@ -43,8 +58,8 @@
                 <div class="form-container">
                     <h1>Ajouter un ami</h1>
                     <!-- Message de succès ou d'erreur -->
-                    <div id="success-message" class="alert alert-success">Demande d'ami envoyée avec succès.</div>
-                    <div id="error-message" class="alert alert-danger">Erreur : le nom d'utilisateur est invalide.</div>
+                    <div id="success-message" class="alert alert-success success-background">Demande d'ami envoyée avec succès.</div>
+                    <div id="error-message" class="alert alert-danger error-background">Le nom d'utilisateur est invalide.</div>
 
                     <!-- Formulaire d'ajout d'ami -->
                     <form id="addFriendForm" method="POST" action="{{ url_for('add_friend') }}">
@@ -94,8 +109,9 @@
                 })
                 .then(response => response.text())
                 .then(data => {
-                    if (data.includes("Demande d'ami envoyée avec succès")) {
-                        showSuccess();
+                    // Vérifiez ici si la réponse contient "Demande d'ami envoyée"
+                    if (data.includes("Demande d'ami envoyée")) {
+                        showSuccess(data); // Si succès
                     } else {
                         showError(data);  // Affiche le message d'erreur provenant du backend
                     }
@@ -107,9 +123,12 @@
             });
 
             // Fonction pour afficher un message de succès
-            function showSuccess() {
+            function showSuccess(message) {
+                successMessage.textContent = message;  // Mettre à jour le message
                 successMessage.style.display = 'block';
                 errorMessage.style.display = 'none';
+                successMessage.classList.add('success-background');
+                errorMessage.classList.remove('error-background');
                 friendUsername.value = '';  // Réinitialiser le champ du nom d'utilisateur
             }
 
@@ -118,6 +137,8 @@
                 errorMessage.textContent = message;
                 errorMessage.style.display = 'block';
                 successMessage.style.display = 'none';
+                errorMessage.classList.add('error-background');
+                successMessage.classList.remove('success-background');
             }
         });
     </script>
