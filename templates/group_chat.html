@@ -118,6 +118,13 @@
     <div class="container">
         <h1>Discussion dans le groupe : {{ group.name }}</h1>
         
+        <!-- Bouton pour lancer un appel de groupe -->
+        <div class="call-controls" style="margin-bottom: 15px; text-align: center;">
+            <a href="{{ url_for('group_call', group_id=group.id) }}" class="btn btn-success">
+                Lancer un appel de groupe
+            </a>
+            
+        </div>
         <!-- Liste des messages -->
         <ul>
             {% for message in messages %}

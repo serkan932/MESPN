@@ -68,6 +68,13 @@
         <div class="chat-container">
             <h2>Conversation avec {{ conversation.user_2.username if conversation.user_1.id == current_user.id else conversation.user_1.username }}</h2>
             
+            <!-- Bouton pour lancer un appel -->
+            <div class="call-controls" style="margin-bottom: 15px;">
+                <a href="{{ url_for('call_user', user_id=(conversation.user_2.id if conversation.user_1.id == current_user.id else conversation.user_1.id)) }}" class="btn btn-success">
+                    Lancer un appel
+                </a>
+                
+            </div>
             <!-- Liste des messages -->
             <div class="message-list">
                 {% for message in messages %}

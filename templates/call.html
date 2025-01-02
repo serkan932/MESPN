@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appel privé avec {{ user.username }}</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: #4a90e2;
+        }
+
+        #video-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        video {
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        .controls button {
+            margin: 5px;
+            padding: 10px 20px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            background-color: #357ABD;
+        }
+
+        a {
+            display: block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: #4a90e2;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Appel avec {{ user.username }}</h1>
+        <div id="video-container">
+            <video id="local-video" autoplay muted></video>
+            <video id="remote-video" autoplay></video>
+        </div>
+        <div class="controls">
+            <button id="muteButton">Couper le micro</button>
+            <button id="cameraButton">Désactiver la caméra</button>
+            <button id="endCallButton">Quitter l'appel</button>
+        </div>
+        <a href="{{ url_for('index') }}">Retour à l'accueil</a>
+    </div>
+
+    <script>
+        const socket = io();
+
+        const localVideo = document.getElementById('local-video');
+        const remoteVideo = document.getElementById('remote-video');
+        const muteButton = document.getElementById('muteButton');
+        const cameraButton = document.getElementById('cameraButton');
+        const endCallButton = document.getElementById('endCallButton');
+        let localStream;
+        let peerConnection;
+        const config = {
+            iceServers: [
+                { urls: "stun:stun.l.google.com:19302" }
+            ]
+        };
+
+        // Initialiser l'appel vidéo
+        async function initCall() {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+
+            // Afficher la vidéo locale
+            localVideo.srcObject = localStream;
+
+            // Créer une connexion WebRTC
+            peerConnection = new RTCPeerConnection(config);
+
+            // Ajouter les pistes locales à la connexion
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            // Écouter les pistes distantes
+            peerConnection.ontrack = (event) => {
+                remoteVideo.srcObject = event.streams[0];
+            };
+
+            // Gérer les candidats ICE
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.emit('ice-candidate', { candidate: event.candidate, to: {{ user.id }} });
+                }
+            };
+
+            // Démarrer l'appel
+            socket.emit('call-user', { userId: {{ user.id }} });
+
+            socket.on('call-made', async (data) => {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                socket.emit('make-answer', { answer, to: data.from });
+            });
+
+            socket.on('answer-made', async (data) => {
+                await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            });
+
+            socket.on('ice-candidate', async (data) => {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+            });
+        }
+
+        // Bouton couper le micro
+        muteButton.addEventListener('click', () => {
+            const audioTrack = localStream.getAudioTracks()[0];
+            audioTrack.enabled = !audioTrack.enabled;
+            muteButton.textContent = audioTrack.enabled ? 'Couper le micro' : 'Réactiver le micro';
+        });
+
+        // Bouton désactiver la caméra
+        cameraButton.addEventListener('click', () => {
+            const videoTrack = localStream.getVideoTracks()[0];
+            videoTrack.enabled = !videoTrack.enabled;
+            cameraButton.textContent = videoTrack.enabled ? 'Désactiver la caméra' : 'Activer la caméra';
+        });
+
+        // Bouton quitter l'appel
+        endCallButton.addEventListener('click', () => {
+            peerConnection.close();
+            localStream.getTracks().forEach(track => track.stop());
+            window.location.href = "{{ url_for('index') }}";
+        });
+
+        // Démarrer l'appel
+        initCall();
+    </script>
+</body>
+</html>

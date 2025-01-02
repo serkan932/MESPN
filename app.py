@@ -392,6 +392,48 @@ def edit_group(group_id):
 
     return render_template('edit_group.html', group=group)
 
+
+@app.route('/call/<int:user_id>', methods=['GET'])
+@login_required
+def call_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return "Utilisateur introuvable.", 404
+
+    return render_template('call.html', user=user, current_user=current_user)
+
+
+@app.route('/group_call/<int:group_id>', methods=['GET'])
+@login_required
+def group_call(group_id):
+    group = Group.query.get(group_id)
+    if not group:
+        return "Groupe introuvable.", 404
+
+    is_member = GroupMember.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+    if not is_member:
+        return "Vous n'êtes pas membre de ce groupe.", 403
+
+    return render_template('group_call.html', group=group, current_user=current_user)
+
+@socketio.on('call-user')
+def handle_call(data):
+    user_id = data['userId']
+    offer = data['offer']
+    emit('call-made', {'offer': offer, 'from': current_user.id}, to=user_id)
+
+#websocket pour les appels, pour gerer les connexions WebRTC
+@socketio.on('make-answer')
+def handle_answer(data):
+    answer = data['answer']
+    emit('answer-made', {'answer': answer, 'to': current_user.id}, to=data['to'])
+
+
+@socketio.on('ice-candidate')
+def handle_ice_candidate(data):
+    candidate = data['candidate']
+    emit('ice-candidate', {'candidate': candidate}, to=data['to'])
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
@@ -399,4 +441,4 @@ if __name__ == '__main__':
     udp_thread = threading.Thread(target=start_udp_server, daemon=True)
     udp_thread.start()
 
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
