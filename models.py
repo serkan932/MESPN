@@ -9,6 +9,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(150), unique=True, nullable=False)  # Nouveau champ
     phone_number = db.Column(db.String(20), unique=True, nullable=False)  # Nouveau champ
     password = db.Column(db.String(150), nullable=False)
+    profile_picture = db.Column(db.String(200))
 
 class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)

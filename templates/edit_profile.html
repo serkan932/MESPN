@@ -79,6 +79,8 @@
         }
 
         input[type="text"],
+        input[type="email"],
+        input[type="tel"],
         input[type="file"] {
             padding: 12px;
             margin: 15px 0;
@@ -89,6 +91,8 @@
         }
 
         input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
         input[type="file"]:focus {
             border-color: #2980b9;
             outline: none;
@@ -165,21 +169,26 @@
         </header>
 
         <div class="content">
-            <h2>Changer votre pseudo et photo de profil</h2>
+            <h2>Mettre à jour vos informations personnelles</h2>
 
             <!-- Aperçu de la photo de profil -->
             <div class="profile-preview">
-                <!-- Chargement de l'image depuis le serveur -->
                 <img 
                     id="profileImagePreview" 
-                    src="{{ user.profile_picture or url_for('static', filename='icone-profil-avatar-par-defaut-image-utilisateur-medias-sociaux-icone-avatar-gris-silhouette-profil-vierge-illustration-vectorielle_561158-3467.avif') }}" 
-                <input type="file" id="profilePicture" name="profile_picture" accept="image/*" onchange="previewImage(event)">
+                    src="{{ user.profile_picture or url_for('static', filename='icone-profil-avatar-par-defaut-image-utilisateur-medias-sociaux-icone-avatar-gris-silhouette-profil-vierge-illustration-vectorielle_561158-3467.avif') }}" />
+                <input type="file" id="profilePicture" name="profile_picture" accept="image/*" onchange="previewImage(event)"/>
             </div>
 
             <!-- Formulaire de modification -->
             <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data">
                 <label for="username">Pseudo :</label>
                 <input type="text" id="username" name="username" value="{{ user.username }}" required>
+
+                <label for="email">E-mail :</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" required>
+
+                <label for="phone_number">Numéro de téléphone :</label>
+                <input type="tel" id="phone_number" name="phone_number" value="{{ current_user.phone_number }}" required>
 
                 <button type="submit">Enregistrer les modifications</button>
             </form>

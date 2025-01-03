@@ -12,9 +12,16 @@ app.config['SECRET_KEY'] = 'votre_cle_secrete'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///messagerie.db'
 
 # Configuration pour les photos de profil
-UPLOAD_FOLDER = 'static/profile_pictures'
+UPLOAD_FOLDER = 'static/photos_profil'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'bmp'}  # Extensions autorisées
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
 
 db.init_app(app)  # Initialise SQLAlchemy avec l'application Flask
 login_manager = LoginManager(app)
@@ -123,23 +130,29 @@ def register():
 @login_required
 def edit_profile():
     if request.method == 'POST':
-        # Récupérer le nouveau pseudo
+        # Récupérer les nouvelles informations du formulaire
         username = request.form['username']
-        current_user.username = username  # Mettre à jour le pseudo de l'utilisateur dans la base de données
+        email = request.form['email']
+        phone_number = request.form['phone_number']
+        profile_picture = request.files.get('profile_picture')
+        
+        # Mettre à jour les informations de l'utilisateur
+        current_user.username = username
+        current_user.email = email
+        current_user.phone_number = phone_number
         
         # Gestion de l'upload de la photo de profil
-        if 'profile_picture' in request.files:
-            file = request.files['profile_picture']
-            if file and allowed_file(file.filename):
-                # Sécuriser le nom du fichier
-                filename = secure_filename(file.filename)
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(file_path)
-                current_user.profile_picture = file_path  # Mettre à jour le chemin de la photo dans la base de données
-                
-        db.session.commit()  # Sauvegarder les changements dans la base de données
+        if profile_picture and allowed_file(profile_picture.filename):
+            # Sécuriser le nom du fichier
+            filename = secure_filename(profile_picture.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            profile_picture.save(file_path)  # Sauvegarder le fichier dans le dossier 'photos_profil'
 
-        flash('Profile updated successfully!', 'success')
+            current_user.profile_picture = file_path
+
+        db.session.commit()  # Sauvegarder les changements dans la base de données
+        
+        flash('Profil mis à jour avec succès !', 'success')
         return redirect(url_for('index'))  # Rediriger vers la page d'accueil après la mise à jour
 
     return render_template('edit_profile.html', user=current_user)
@@ -147,9 +160,11 @@ def edit_profile():
 @app.context_processor
 def inject_profile_picture():
     def get_profile_picture(user):
+        # Si l'utilisateur a une photo de profil, on renvoie l'URL correspondante dans le dossier 'photos_profil'
         if user.profile_picture and os.path.exists(user.profile_picture):
-            return url_for('static', filename=f"uploads/{os.path.basename(user.profile_picture)}")
-        return url_for('static', filename='icone-profil-avatar-par-defaut-image-utilisateur-medias-sociaux-icone-avatar-gris-silhouette-profil-vierge-illustration-vectorielle_561158-3467.avif')  # Image par défaut
+            return url_for('static', filename=f"photos_profil/{os.path.basename(user.profile_picture)}")
+        # Sinon, on retourne l'image par défaut
+        return url_for('static', filename='icone-profil-avatar-par-defaut-image-utilisateur-medias-sociaux-icone-avatar-gris-silhouette-profil-vierge-illustration-vectorielle_561158-3467.avif')
     return dict(get_profile_picture=get_profile_picture)
 
 # Gestion des photos de profil
