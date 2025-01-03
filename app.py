@@ -1,19 +1,33 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import threading
 import socket
+import os
+from werkzeug.utils import secure_filename
 from models import *
-from flask import flash
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'votre_cle_secrete'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///messagerie.db'
+
+# Configuration pour les photos de profil
+UPLOAD_FOLDER = 'static/profile_pictures'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 db.init_app(app)  # Initialise SQLAlchemy avec l'application Flask
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 socketio = SocketIO(app)  # Initialise SocketIO pour les WebSocket
-# Gestion des utilisateurs connectés
+
+# Crée le dossier des photos de profil s'il n'existe pas
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Fonction pour vérifier les fichiers autorisés
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))  # Correctif pour éviter LegacyAPIWarning
@@ -49,6 +63,7 @@ def index():
         })
 
     return render_template('index.html', user=current_user, users=users, conversation_data=conversation_data)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -102,6 +117,68 @@ def register():
         return redirect(url_for('login'))  # Rediriger vers la page de connexion après l'inscription
 
     return render_template('register.html')
+
+
+@app.route('/edit_profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    if request.method == 'POST':
+        # Récupérer le nouveau pseudo
+        username = request.form['username']
+        current_user.username = username  # Mettre à jour le pseudo de l'utilisateur dans la base de données
+        
+        # Gestion de l'upload de la photo de profil
+        if 'profile_picture' in request.files:
+            file = request.files['profile_picture']
+            if file and allowed_file(file.filename):
+                # Sécuriser le nom du fichier
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_path)
+                current_user.profile_picture = file_path  # Mettre à jour le chemin de la photo dans la base de données
+                
+        db.session.commit()  # Sauvegarder les changements dans la base de données
+
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('index'))  # Rediriger vers la page d'accueil après la mise à jour
+
+    return render_template('edit_profile.html', user=current_user)
+
+@app.context_processor
+def inject_profile_picture():
+    def get_profile_picture(user):
+        if user.profile_picture and os.path.exists(user.profile_picture):
+            return url_for('static', filename=f"uploads/{os.path.basename(user.profile_picture)}")
+        return url_for('static', filename='icone-profil-avatar-par-defaut-image-utilisateur-medias-sociaux-icone-avatar-gris-silhouette-profil-vierge-illustration-vectorielle_561158-3467.avif')  # Image par défaut
+    return dict(get_profile_picture=get_profile_picture)
+
+# Gestion des photos de profil
+@app.route('/upload_profile_picture', methods=['POST'])
+@login_required
+def upload_profile_picture():
+    if 'profile_picture' not in request.files:
+        flash("Aucun fichier sélectionné.", "error")
+        return redirect(url_for('index'))
+
+    file = request.files['profile_picture']
+    if file.filename == '':
+        flash("Aucun fichier sélectionné.", "error")
+        return redirect(url_for('index'))
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        # Mettre à jour le chemin de l'image dans le profil utilisateur
+        current_user.profile_picture = filepath
+        db.session.commit()
+
+        flash("Photo de profil mise à jour avec succès.", "success")
+        return redirect(url_for('index'))
+
+    flash("Type de fichier non autorisé.", "error")
+    return redirect(url_for('index'))
 
 # Gestion des amis
 @app.route('/friends', methods=['GET'])

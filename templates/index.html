@@ -4,189 +4,205 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messagerie Instantanée</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
 
-        /* Header modernisé */
-        header {
-            background: linear-gradient(135deg, #4a90e2, #2c3e50); /* Dégradé de couleurs */
-            color: white;
-            padding: 20px 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    /* Header modernisé */
+    header {
+        background: linear-gradient(135deg, #4a90e2, #2c3e50); /* Dégradé de couleurs */
+        color: white;
+        padding: 20px 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-        }
+    header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
 
-        header h1 i {
-            margin-right: 10px;
-            font-size: 28px;
-        }
+    header h1 i {
+        margin-right: 10px;
+        font-size: 28px;
+    }
 
-        header a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 18px;
-            padding: 10px 15px;
-            background-color: #16a085;
-            border-radius: 8px;
-            transition: background-color 0.3s ease;
-        }
+    /* Conteneur pour les boutons */
+    .header-buttons {
+    display: flex;
+    gap: 5px; /* Espacement entre les boutons */
+    margin-left: auto; /* Permet de pousser les éléments vers la droite */
+    justify-content: flex-end; /* S'assure que les boutons sont alignés à droite */
+}
 
-        header a:hover {
-            background-color: #1abc9c;
-        }
+    header a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 18px;
+        padding: 10px 15px;
+        background-color: #16a085;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
 
-        .main-content {
-            display: flex;
-            gap: 20px;
-            margin-top: 30px;
-        }
+    header a:hover {
+        background-color: #1abc9c;
+    }
 
-        .sidebar, .content {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-        }
+    .main-content {
+        display: flex;
+        gap: 20px;
+        margin-top: 30px;
+    }
 
-        .sidebar {
-            flex: 1;
-            max-width: 300px;
-        }
+    .sidebar, .content {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
 
-        .content {
-            flex: 3;
-        }
+    .sidebar {
+        flex: 1;
+        max-width: 300px;
+    }
 
-        h2 {
-            color: #4a90e2;
-            margin-bottom: 10px;
-        }
+    .content {
+        flex: 3;
+    }
 
-        form {
-            margin-bottom: 20px;
-        }
+    h2 {
+        color: #4a90e2;
+        margin-bottom: 10px;
+    }
 
-        input[type="text"], select {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
+    form {
+        margin-bottom: 20px;
+    }
 
-        button {
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px; /* Augmentation de la taille du bouton */
-            font-size: 17px; /* Agrandir la taille de la police */
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            text-align: center;
-            width: 100%;  /* Prendre toute la largeur */
-            display: block;  /* S'assurer que le bouton est un bloc */
-            margin: 0 auto;  /* Centrer le bouton */
-        }
+    input[type="text"], select {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
 
-        button:hover {
-            background-color: #0056b3;
-        }
+    button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px; /* Augmentation de la taille du bouton */
+        font-size: 17px; /* Agrandir la taille de la police */
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        text-align: center;
+        width: 100%;  /* Prendre toute la largeur */
+        display: block;  /* S'assurer que le bouton est un bloc */
+        margin: 0 auto;  /* Centrer le bouton */
+    }
 
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
+    button:hover {
+        background-color: #0056b3;
+    }
 
-        li {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
 
-        .badge {
-            background-color: #e74c3c;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-        }
+    li {
+        background-color: #f9f9f9;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-        .btn-group {
-            display: block; /* Afficher les éléments en colonne */
-            margin-bottom: 20px;
-        }
+    .badge {
+        background-color: #e74c3c;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+    }
 
-        .btn-group a {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 5px;
-            text-decoration: none;
-            text-align: center;
-            font-weight: bold;
-            display: block; /* Les liens occuperont toute la largeur disponible */
-            margin-bottom: 10px; /* Espacement entre les boutons */
-        }
+    .btn-group {
+        display: block; /* Afficher les éléments en colonne */
+        margin-bottom: 20px;
+    }
 
-        .btn-group a:hover {
-            background-color: #0056b3;
-        }
+    .btn-group a {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        text-decoration: none;
+        text-align: center;
+        font-weight: bold;
+        display: block; /* Les liens occuperont toute la largeur disponible */
+        margin-bottom: 10px; /* Espacement entre les boutons */
+    }
 
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 10px;
-            background-color: #4a90e2;
-            color: white;
-        }
+    .btn-group a:hover {
+        background-color: #0056b3;
+    }
 
-        /* Spécificité pour le bouton "Nouvelle Discussion" */
-        #newDiscussionButton {
-            padding: 15px 20px;  /* Agrandir la taille du bouton */
-            font-size: 22px;      /* Agrandir la taille de la police */
-            text-align: center;
-            width: 100%;          /* Le bouton prend 80% de la largeur de son conteneur */
-            display: block;      /* Le bouton sera un bloc pour se centrer */
-            margin: 20px auto;   /* Centrer le bouton horizontalement et ajouter un espace au-dessus */
-        }
-    </style>
+    footer {
+        text-align: center;
+        margin-top: 40px;
+        padding: 10px;
+        background-color: #4a90e2;
+        color: white;
+    }
+
+    /* Spécificité pour le bouton "Nouvelle Discussion" */
+    #newDiscussionButton {
+        padding: 15px 20px;  /* Agrandir la taille du bouton */
+        font-size: 22px;      /* Agrandir la taille de la police */
+        text-align: center;
+        width: 100%;          /* Le bouton prend 80% de la largeur de son conteneur */
+        display: block;      /* Le bouton sera un bloc pour se centrer */
+        margin: 20px auto;   /* Centrer le bouton horizontalement et ajouter un espace au-dessus */
+    }
+    
+</style>
+
+    
 </head>
 <body>
     <div class="container">
         <!-- Header avec un message de bienvenue personnalisé -->
         <header>
-            <h1>Bienvenue dans votre messagerie {{ user.username }}</h1>
-            <a href="{{ url_for('logout') }}">Déconnexion</a>
+            <div style="display: flex; align-items: center;">
+                <h1>Bienvenue dans votre messagerie {{ user.username }}</h1>
+            </div>
+            <div class="header-buttons">
+                <a href="{{ url_for('edit_profile') }}" style="margin-right: 20px;">Modifier le profil</a>
+                <a href="{{ url_for('logout') }}">Déconnexion</a>
+            </div>
         </header>
 
         <!-- Contenu principal divisé en deux colonnes : une pour la navigation (sidebar), une pour le contenu principal -->
