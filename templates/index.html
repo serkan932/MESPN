@@ -200,15 +200,17 @@
                     <a href="{{ url_for('friends') }}" class="btn btn-primary">Voir mes amis</a>
                 </div>
 
-                <form method="POST" action="{{ url_for('add_friend') }}">
-                    <label for="friend_id">Ajouter un ami :</label>
-                    <select name="friend_id" id="friend_id">
-                        {% for friend in friends %}
-                            <option value="{{ friend.id }}">{{ friend.username }}</option>
+                <form action="{{ url_for('send_friend_request') }}" method="post">
+                    <label for="user-select">Ajouter un ami :</label>
+                    <select id="user-select" name="user_id" required>
+                        <option value="" disabled selected>Choisir un utilisateur</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
                         {% endfor %}
                     </select>
                     <button type="submit">Envoyer la demande</button>
                 </form>
+                     
 
                 <h2>Groupes</h2>
                 <div class="btn-group">
@@ -233,11 +235,13 @@
                 <div id="newDiscussion" style="display:none; margin-top: 20px;">
                     <form method="POST" action="{{ url_for('start_conversation', friend_id=0) }}">
                         <label for="friend_id">Choisissez un ami :</label>
-                        <select name="friend_id" id="friend_id" required>
-                            {% for friend in friends %}
-                                <option value="{{ friend.id }}">{{ friend.username }}</option>
+                        <select id="user-select" name="user_id" required>
+                            <option value="" disabled selected>Choisir un utilisateur</option>
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
                             {% endfor %}
                         </select>
+                        
                         <button type="submit">Démarrer</button>
                     </form>
                     <button class="cancel-btn" onclick="document.getElementById('newDiscussion').style.display='none'">Annuler</button>

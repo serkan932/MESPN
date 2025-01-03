@@ -22,6 +22,12 @@ def load_user(user_id):
 @app.route('/')
 @login_required
 def index():
+    friends = [friend.friend_id for friend in Friend.query.filter_by(user_id=current_user.id).all()]
+    friends.append(current_user.id)  # Inclure l'utilisateur lui-même
+
+    # Récupérer tous les utilisateurs qui ne sont pas encore amis
+    users = User.query.filter(~User.id.in_(friends)).all()
+
     conversations = Conversation.query.filter(
         (Conversation.user_1_id == current_user.id) | 
         (Conversation.user_2_id == current_user.id)
@@ -42,8 +48,7 @@ def index():
             'last_message': last_message  # Ajouter le dernier message à la liste des données
         })
 
-    return render_template('index.html', user=current_user, conversation_data=conversation_data)
-
+    return render_template('index.html', user=current_user, users=users, conversation_data=conversation_data)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -447,6 +452,32 @@ def handle_answer(data):
 def handle_ice_candidate(data):
     candidate = data['candidate']
     emit('ice-candidate', {'candidate': candidate}, to=data['to'])
+
+@app.route('/send_friend_request', methods=['POST'])
+@login_required
+def send_friend_request():
+    user_id = request.form.get('user_id')
+    if not user_id:
+        return "Erreur : Aucun utilisateur sélectionné.", 400
+
+    friend = User.query.get(user_id)
+    if not friend:
+        return "Erreur : Utilisateur introuvable.", 404
+
+    if friend.id == current_user.id:
+        return "Erreur : Vous ne pouvez pas vous ajouter vous-même.", 400
+
+    existing_request = FriendRequest.query.filter_by(sender_id=current_user.id, receiver_id=friend.id, status='pending').first()
+    if existing_request:
+        return "Erreur : Une demande d'ami est déjà en cours.", 400
+
+    new_request = FriendRequest(sender_id=current_user.id, receiver_id=friend.id)
+    db.session.add(new_request)
+    db.session.commit()
+
+    flash(f"Demande d'ami envoyée à {friend.username}.", "success")
+    return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     with app.app_context():
