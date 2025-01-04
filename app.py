@@ -144,12 +144,15 @@ def edit_profile():
         username = request.form['username']
         email = request.form['email']
         phone_number = request.form['phone_number']
+        bio = request.form['bio']
         profile_picture = request.files.get('profile_picture')
+        
         
         # Mettre à jour les informations utilisateur
         current_user.username = username
         current_user.email = email
         current_user.phone_number = phone_number
+        current_user.bio = bio
         
         # Gestion de l'upload de la photo de profil
         if profile_picture and allowed_file(profile_picture.filename):

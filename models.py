@@ -11,6 +11,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(150), nullable=False)
     profile_picture = db.Column(db.String(200))
 
+
 class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_1_id = db.Column(db.Integer, db.ForeignKey('user.id'))
