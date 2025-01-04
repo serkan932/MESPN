@@ -5,12 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Appel privé avec {{ user.username }}</title>
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="{{ url_for('static', filename='dark_mode.js') }}"></script>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
             padding: 0;
+            color: #333;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background-color: #333;
+            color: #f4f4f9;
         }
 
         .container {
@@ -21,9 +30,18 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode .container {
+            background-color: #444;
         }
 
         h1 {
+            color: #4a90e2;
+        }
+
+        body.dark-mode h1 {
             color: #4a90e2;
         }
 
@@ -40,6 +58,11 @@
             border: 1px solid #ddd;
             border-radius: 10px;
             margin-bottom: 10px;
+            background-color: black;
+        }
+
+        body.dark-mode video {
+            border-color: #666;
         }
 
         .controls {
@@ -54,9 +77,18 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         .controls button:hover {
+            background-color: #357ABD;
+        }
+
+        body.dark-mode .controls button {
+            background-color: #4a90e2;
+        }
+
+        body.dark-mode .controls button:hover {
             background-color: #357ABD;
         }
 
@@ -65,14 +97,41 @@
             margin-top: 20px;
             text-decoration: none;
             color: #4a90e2;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode a {
+            color: #4a90e2;
         }
 
         a:hover {
             text-decoration: underline;
         }
+
+        #darkModeToggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #007bff;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode #darkModeToggle {
+            color: #4a90e2;
+        }
+
+        #darkModeToggle i {
+            font-size: 24px;
+        }
     </style>
 </head>
 <body>
+
+
     <div class="container">
         <h1>Appel avec {{ user.username }}</h1>
         <div id="video-container">
@@ -170,6 +229,12 @@
 
         // Démarrer l'appel
         initCall();
+    </script>
+    <script>
+        if (localStorage.getItem('dark-mode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+        }
+        
     </script>
 </body>
 </html>

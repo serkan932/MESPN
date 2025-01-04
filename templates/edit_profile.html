@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modifier le Profil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="{{ url_for('static', filename='dark_mode.js') }}"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -11,6 +13,12 @@
             margin: 0;
             padding: 0;
             color: #333;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background-color: #333;
+            color: #f4f4f9;
         }
 
         .container {
@@ -20,12 +28,21 @@
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode .container {
+            background-color: #444;
         }
 
         h1 {
             text-align: center;
             color: #4a90e2;
             margin-bottom: 30px;
+        }
+
+        body.dark-mode h1 {
+            color: #4a90e2;
         }
 
         .form-group {
@@ -55,13 +72,34 @@
             outline: none;
         }
 
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box; /* Assure une largeur uniforme */
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="file"] {
+            height: 45px; /* Ajustez pour qu'il corresponde visuellement aux autres champs */
+            line-height: normal; /* Pour éviter les problèmes d'alignement vertical */
+        }
+        
+        input:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+        
         .profile-preview {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            text-align: center;
             margin-bottom: 30px;
         }
-
+        
         .profile-preview img {
             width: 150px;
             height: 150px;
@@ -70,6 +108,7 @@
             border: 3px solid #4a90e2;
             margin-bottom: 15px;
         }
+        
 
         .btn-container {
             display: flex;
@@ -104,37 +143,64 @@
         button.cancel-btn:hover {
             background-color: #c0392b;
         }
+
+        #darkModeToggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #007bff;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode #darkModeToggle {
+            color: #4a90e2;
+        }
     </style>
 </head>
 <body>
+
     <div class="container">
         <h1>Modifier votre profil</h1>
 
         <!-- Formulaire de modification -->
         <form action="{{ url_for('edit_profile') }}" method="POST" enctype="multipart/form-data">
             <!-- Aperçu de la photo de profil -->
-            <div class="profile-preview">
+            <div class="profile-preview" style="text-align: center; margin-bottom: 30px;">
                 <img 
                     id="profileImagePreview" 
                     src="{{ url_for('static', filename='photos_profil/' + user.profile_picture.split('/')[-1]) if user.profile_picture else url_for('static', filename='default-avatar.jpg') }}" 
+                    style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid #4a90e2; margin-bottom: 15px;"
                 />
-                <input type="file" id="profilePicture" name="profile_picture" accept="image/*" onchange="previewImage(event)">
+                <input 
+                    type="file" 
+                    id="profilePicture" 
+                    name="profile_picture" 
+                    accept="image/*" 
+                    onchange="previewImage(event)" 
+                    class="form-control"
+                >
             </div>
-
+            
             <div class="form-group">
                 <label for="username">Pseudo :</label>
-                <input type="text" id="username" name="username" value="{{ user.username }}" required>
+                <input type="text" id="username" name="username" value="{{ user.username }}" class="form-control" required>
             </div>
-
+            
             <div class="form-group">
                 <label for="email">E-mail :</label>
-                <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                <input type="email" id="email" name="email" value="{{ user.email }}" class="form-control" required>
             </div>
-
+            
             <div class="form-group">
                 <label for="phone_number">Numéro de téléphone :</label>
-                <input type="tel" id="phone_number" name="phone_number" value="{{ user.phone_number }}" required>
+                <input type="tel" id="phone_number" name="phone_number" value="{{ user.phone_number }}" class="form-control" required>
             </div>
+            
+            
 
             <div class="btn-container">
                 <button type="submit" class="save-btn">Enregistrer les modifications</button>
@@ -155,6 +221,12 @@
             };
             reader.readAsDataURL(event.target.files[0]);
         }
+    </script>
+    <script>
+        if (localStorage.getItem('dark-mode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+        }
+        
     </script>
 </body>
 </html>

@@ -1,16 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ group.name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script src="{{ url_for('static', filename='dark_mode.js') }}"></script>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
             padding: 0;
             color: #333;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode {
+            background-color: #333;
+            color: #f4f4f9;
         }
 
         .container {
@@ -20,12 +28,21 @@
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode .container {
+            background-color: #444;
         }
 
         h1 {
             text-align: center;
             color: #4a90e2;
             margin-bottom: 20px;
+        }
+
+        body.dark-mode h1 {
+            color: #4a90e2;
         }
 
         ul {
@@ -37,6 +54,12 @@
             border: 1px solid #ddd;
             border-radius: 8px;
             background-color: #fafafa;
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode ul {
+            background-color: #555;
+            border-color: #666;
         }
 
         li {
@@ -44,6 +67,11 @@
             border-bottom: 1px solid #ddd;
             display: flex;
             justify-content: space-between;
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode li {
+            border-bottom-color: #666;
         }
 
         li:last-child {
@@ -54,8 +82,16 @@
             color: #4a90e2;
         }
 
+        body.dark-mode li strong {
+            color: #4a90e2;
+        }
+
         li small {
             color: #999;
+        }
+
+        body.dark-mode li small {
+            color: #ccc;
         }
 
         form {
@@ -71,6 +107,13 @@
             border-radius: 5px;
             resize: none;
             height: 100px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        body.dark-mode textarea {
+            background-color: #555;
+            border-color: #666;
+            color: #f4f4f9;
         }
 
         button {
@@ -88,6 +131,14 @@
             background-color: #357ABD;
         }
 
+        body.dark-mode button {
+            background-color: #4a90e2;
+        }
+
+        body.dark-mode button:hover {
+            background-color: #357ABD;
+        }
+
         a {
             display: block;
             text-align: center;
@@ -96,8 +147,32 @@
             color: #4a90e2;
         }
 
+        body.dark-mode a {
+            color: #4a90e2;
+        }
+
         a:hover {
             text-decoration: underline;
+        }
+
+        #darkModeToggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #007bff;
+            transition: color 0.3s ease;
+        }
+
+        body.dark-mode #darkModeToggle {
+            color: #4a90e2;
+        }
+
+        #darkModeToggle i {
+            font-size: 24px;
         }
     </style>
     <script>
@@ -115,6 +190,7 @@
     </script>
 </head>
 <body>
+
     <div class="container">
         <h1>Discussion dans le groupe : {{ group.name }}</h1>
         
@@ -123,8 +199,8 @@
             <a href="{{ url_for('group_call', group_id=group.id) }}" class="btn btn-success">
                 Lancer un appel de groupe
             </a>
-            
         </div>
+        
         <!-- Liste des messages -->
         <ul>
             {% for message in messages %}
@@ -146,5 +222,11 @@
         <!-- Lien pour retourner aux groupes -->
         <a href="{{ url_for('groups') }}">Retour aux groupes</a>
     </div>
+    <script>
+        if (localStorage.getItem('dark-mode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+        }
+        
+    </script>
 </body>
 </html>
