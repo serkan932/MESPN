@@ -136,26 +136,29 @@ def edit_profile():
         phone_number = request.form['phone_number']
         profile_picture = request.files.get('profile_picture')
         
-        # Mettre à jour les informations de l'utilisateur
+        # Mettre à jour les informations utilisateur
         current_user.username = username
         current_user.email = email
         current_user.phone_number = phone_number
         
         # Gestion de l'upload de la photo de profil
         if profile_picture and allowed_file(profile_picture.filename):
-            # Sécuriser le nom du fichier
+            # Supprimer l'ancienne photo si elle existe
+            if current_user.profile_picture and os.path.exists(current_user.profile_picture):
+                os.remove(current_user.profile_picture)
+            
+            # Sauvegarder la nouvelle photo
             filename = secure_filename(profile_picture.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            profile_picture.save(file_path)  # Sauvegarder le fichier dans le dossier 'photos_profil'
+            profile_picture.save(file_path)  # Enregistrer le fichier
+            current_user.profile_picture = file_path  # Mettre à jour le chemin dans la BDD
 
-            current_user.profile_picture = file_path
-
-        db.session.commit()  # Sauvegarder les changements dans la base de données
-        
-        flash('Profil mis à jour avec succès !', 'success')
-        return redirect(url_for('index'))  # Rediriger vers la page d'accueil après la mise à jour
+        db.session.commit()  # Enregistrer les modifications
+        flash('Profil mis à jour avec succès.', 'success')
+        return redirect(url_for('index'))  # Rediriger vers la page d'accueil
 
     return render_template('edit_profile.html', user=current_user)
+
 
 @app.context_processor
 def inject_profile_picture():
