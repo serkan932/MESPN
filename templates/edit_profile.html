@@ -117,7 +117,6 @@
                 <img 
                     id="profileImagePreview" 
                     src="{{ url_for('static', filename='photos_profil/' + user.profile_picture.split('/')[-1]) if user.profile_picture else url_for('static', filename='default-avatar.jpg') }}" 
-                    alt="Votre photo de profil"
                 />
                 <input type="file" id="profilePicture" name="profile_picture" accept="image/*" onchange="previewImage(event)">
             </div>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import session, Flask, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import threading
@@ -70,6 +70,16 @@ def index():
         })
 
     return render_template('index.html', user=current_user, users=users, conversation_data=conversation_data)
+
+
+@app.route('/toggle_dark_mode', methods=['POST'])
+@login_required
+def toggle_dark_mode():
+    # Change le mode pour l'utilisateur actuel (ajoutez un champ 'dark_mode' à votre modèle User si ce n'est pas déjà fait)
+    current_user.dark_mode = not current_user.dark_mode
+    db.session.commit()
+    session['dark_mode'] = current_user.dark_mode
+    return "Mode sombre activé" if current_user.dark_mode else "Mode sombre désactivé"
 
 
 @app.route('/login', methods=['GET', 'POST'])

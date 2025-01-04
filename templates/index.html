@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Messagerie Instantanée</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <style>
     body {
         font-family: 'Arial', sans-serif;
@@ -67,6 +68,45 @@
         background-color: #1abc9c;
     }
 
+
+    .dark-mode-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    body.dark-mode {
+        background-color: #333;
+        color: #f4f4f9;
+    }
+
+    
+    header.dark-mode {
+        background: linear-gradient(135deg, #2c3e50, #4a90e2);
+    }
+
+    #darkModeToggle {
+        background-color: transparent; /* Supprimer le fond pour n'afficher que l'icône */
+        padding: 5px; /* Réduire le padding pour un petit bouton */
+        border-radius: 50%; /* Arrondir le bouton */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer; /* Curseur pointeur pour le rendre interactif */
+        transition: background-color 0.3s ease;
+        margin-left: 20px;
+    }
+
+    #darkModeToggle:hover {
+        background-color: #16a085; /* Couleur de survol */
+    }
+
+    .fas {
+        font-size: 18px; /* Taille de l'icône plus petite */
+        color: white; /* Couleur de l'icône */
+    }
+
+
     .main-content {
         display: flex;
         gap: 20px;
@@ -78,6 +118,10 @@
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         padding: 20px;
+    }
+
+    body.dark-mode .sidebar, body.dark-mode .content {
+        background-color: #444;
     }
 
     .sidebar {
@@ -190,6 +234,7 @@
     
 </style>
 
+
     
 </head>
 <body>
@@ -205,6 +250,11 @@
             <div class="header-buttons">
                 <a href="{{ url_for('edit_profile') }}" style="margin-right: 20px;">Modifier le profil</a>
                 <a href="{{ url_for('logout') }}">Déconnexion</a>
+            </div>
+            <div class="dark-mode-toggle">
+                <a href="javascript:void(0);" id="darkModeToggle" title="Mode sombre">
+                    <i class="fas fa-moon"></i> <!-- Icône lune -->
+                </a>
             </div>
         </header>
 
@@ -292,6 +342,26 @@
         <footer>
             <p>© 2025 Messagerie Instantanée. Tous droits réservés.</p>
         </footer>
+
+        <script>
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const icon = darkModeToggle.querySelector('i');
+            
+            darkModeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                document.querySelector('header').classList.toggle('dark-mode');
+        
+                // Change l'icône en fonction du mode sombre ou clair
+                if (document.body.classList.contains('dark-mode')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun'); // Remplace la lune par le soleil
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon'); // Remplace le soleil par la lune
+                }
+            });
+        </script>
+        
     </div>
 </body>
 </html>
