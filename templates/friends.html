@@ -143,6 +143,10 @@
                             <form method="POST" action="{{ url_for('start_conversation', friend_id=friend.id) }}">
                                 <button type="submit" class="btn">Démarrer une conversation</button>
                             </form>
+                            <!-- Bouton pour voir le profil -->
+                            <a href="{{ url_for('view_profile', user_id=friend.id) }}" class="btn btn-outline-primary">
+                                Voir le profil
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -131,6 +131,11 @@
         <div class="chat-container">
             <h2>Conversation avec {{ conversation.user_2.username if conversation.user_1.id == current_user.id else conversation.user_1.username }}</h2>
             
+            <!-- Lien pour consulter le profil -->
+            <a href="{{ url_for('view_profile', user_id=(conversation.user_2.id if conversation.user_1.id == current_user.id else conversation.user_1.id)) }}" 
+                class="btn btn-info mb-3">
+                Voir le profil
+            </a>
             <!-- Bouton pour lancer un appel -->
             <div class="call-controls" style="margin-bottom: 15px;">
                 <a href="{{ url_for('call_user', user_id=(conversation.user_2.id if conversation.user_1.id == current_user.id else conversation.user_1.id)) }}" class="btn btn-success">

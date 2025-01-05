@@ -211,6 +211,16 @@ def upload_profile_picture():
     flash("Type de fichier non autorisé.", "error")
     return redirect(url_for('index'))
 
+@app.route('/profile/<int:user_id>', methods=['GET'])
+@login_required
+def view_profile(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        flash("Utilisateur introuvable.", "error")
+        return redirect(url_for('friends'))
+    return render_template('view_profile.html', user=user)
+
+
 # Gestion des amis
 @app.route('/friends', methods=['GET'])
 @login_required
