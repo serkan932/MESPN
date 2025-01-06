@@ -85,27 +85,23 @@
             color: #bbb;
         }
 
-        .friend-card .friend-info .btn {
-            background-color: #007bff;
-            color: white;
-            border-radius: 25px;
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            border: none;
-            transition: background-color 0.3s ease;
+        .friend-card .friend-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .friend-card .friend-info .btn:hover {
-            background-color: #0056b3;
+        .friend-card .friend-info .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: flex-start;
         }
 
-        body.dark-mode .friend-card .friend-info .btn {
-            background-color: #4a90e2;
-        }
-
-        body.dark-mode .friend-card .friend-info .btn:hover {
-            background-color: #357abd;
+        .friend-card .friend-info .btn-group .btn {
+            flex-grow: 1;
+            text-align: center;
         }
 
         .back-home {
@@ -140,13 +136,16 @@
                         <div class="friend-info">
                             <h4>{{ friend.username }}</h4>
                             <p>Connectez-vous facilement avec vos amis pour des conversations instantanées.</p>
-                            <form method="POST" action="{{ url_for('start_conversation', friend_id=friend.id) }}">
-                                <button type="submit" class="btn">Démarrer une conversation</button>
-                            </form>
-                            <!-- Bouton pour voir le profil -->
-                            <a href="{{ url_for('view_profile', user_id=friend.id) }}" class="btn btn-outline-primary">
-                                Voir le profil
-                            </a>
+                            <div class="btn-group">
+                                <form method="POST" action="{{ url_for('start_conversation', friend_id=friend.id) }}">
+                                    <button type="submit" class="btn btn-primary">Démarrer une conversation</button>
+                                </form>
+                                <a href="{{ url_for('view_profile', user_id=friend.id) }}" class="btn btn-outline-primary">Voir le profil</a>
+                                <form method="POST" action="{{ url_for('remove_friend', friend_id=friend.id) }}">
+                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                </form>
+                            </div>
+                            
                         </div>
                     </div>
                 </div>

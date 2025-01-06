@@ -172,7 +172,7 @@
             <div class="profile-preview" style="text-align: center; margin-bottom: 30px;">
                 <img 
                     id="profileImagePreview" 
-                    src="{{ url_for('static', filename='photos_profil/' + user.profile_picture.split('/')[-1]) if user.profile_picture else url_for('static', filename='default-avatar.jpg') }}" 
+                    src="{{ url_for('static', filename='photos_profil/' + user.profile_picture.split('/')[-1]) if user.profile_picture else url_for('static', filename='icone-profil-avatar-par-defaut-image-utilisateur-medias-sociaux-icone-avatar-gris-silhouette-profil-vierge-illustration-vectorielle_561158-3467.avif') }}" 
                     style="width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 3px solid #4a90e2; margin-bottom: 15px;"
                 />
                 <input 
@@ -202,7 +202,7 @@
 
             <div class="form-group">
                 <label for="bio">Bio :</label>
-                <textarea id="bio" name="bio" rows="4" class="form-control" placeholder="Ajoutez une courte description de vous...">{{ user.bio }}</textarea>
+                <textarea id="bio" name="bio" rows="4" class="form-control" placeholder="Ajoutez une courte description de vous...">{{ user.bio if user.bio else '' }}</textarea>
             </div>
             
             

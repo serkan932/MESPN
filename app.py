@@ -262,16 +262,21 @@ def add_friend():
 @app.route('/remove_friend/<int:friend_id>', methods=['POST'])
 @login_required
 def remove_friend(friend_id):
+    # Récupération des relations d'amitié dans les deux sens
     friendship = Friend.query.filter_by(user_id=current_user.id, friend_id=friend_id).first()
     reverse_friendship = Friend.query.filter_by(user_id=friend_id, friend_id=current_user.id).first()
 
+    # Vérification si les relations existent
     if not friendship or not reverse_friendship:
-        return "Erreur : Vous n'êtes pas amis avec cet utilisateur.", 404
+        flash("Erreur : Vous n'êtes pas amis avec cet utilisateur.", "danger")
+        return redirect(url_for('friends'))
 
+    # Suppression des relations d'amitié
     db.session.delete(friendship)
     db.session.delete(reverse_friendship)
     db.session.commit()
 
+    flash("Ami supprimé avec succès.", "success")
     return redirect(url_for('friends'))
 
 @app.route('/friend_requests', methods=['GET'])
