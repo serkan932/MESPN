@@ -193,20 +193,23 @@
 
     <div class="container">
         <h1>Discussion dans le groupe : {{ group.name }}</h1>
-        
+
         <!-- Bouton pour lancer un appel de groupe -->
         <div class="call-controls" style="margin-bottom: 15px; text-align: center;">
             <a href="{{ url_for('group_call', group_id=group.id) }}" class="btn btn-success">
                 Lancer un appel de groupe
             </a>
         </div>
-        
+
         <!-- Liste des messages -->
         <ul>
             {% for message in messages %}
                 <li>
                     <span>
-                        <strong>{{ message.sender.username }} :</strong> {{ message.content }}
+                        <strong>
+                            {{ message.sender.username if message.sender.is_active else 'Utilisateur désactivé' }} :
+                        </strong> 
+                        {{ message.content }}
                     </span>
                     <small>{{ message.timestamp }}</small>
                 </li>
@@ -214,10 +217,14 @@
         </ul>
 
         <!-- Formulaire pour envoyer un message -->
+        {% if current_user.is_active %}
         <form method="POST">
             <textarea name="content" placeholder="Votre message..." required></textarea>
             <button type="submit">Envoyer</button>
         </form>
+        {% else %}
+            <p class="text-danger">Vous ne pouvez pas envoyer de messages car votre compte est désactivé.</p>
+        {% endif %}
 
         <!-- Lien pour retourner aux groupes -->
         <a href="{{ url_for('groups') }}">Retour aux groupes</a>
@@ -226,7 +233,6 @@
         if (localStorage.getItem('dark-mode') === 'enabled') {
             document.body.classList.add('dark-mode');
         }
-        
     </script>
 </body>
 </html>

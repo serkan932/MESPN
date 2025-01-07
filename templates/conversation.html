@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="{{ url_for('static', filename='dark_mode.js') }}"></script>
     <style>
+        /* Styles existants */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f9f9f9;
@@ -16,12 +17,10 @@
             color: #333;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-
         body.dark-mode {
             background-color: #333;
             color: #f4f4f9;
         }
-
         .chat-container {
             margin: auto;
             max-width: 800px;
@@ -31,34 +30,27 @@
             background-color: #fff;
             transition: background-color 0.3s ease;
         }
-
         body.dark-mode .chat-container {
             background-color: #444;
             border-color: #555;
         }
-
         .message-list {
             max-height: 400px;
             overflow-y: scroll;
             margin-bottom: 20px;
         }
-
         .message {
             margin-bottom: 15px;
         }
-
         .message.sent {
             text-align: right;
         }
-
         .message.received {
             text-align: left;
         }
-
         .message .username {
             font-weight: bold;
         }
-
         .message .content {
             display: inline-block;
             padding: 10px;
@@ -66,24 +58,19 @@
             background-color: #e0e0e0;
             transition: background-color 0.3s ease;
         }
-
         .message.sent .content {
             background-color: #007bff;
             color: white;
         }
-
         body.dark-mode .message.sent .content {
             background-color: #357ABD;
         }
-
         .message.received .content {
             background-color: #e0e0e0;
         }
-
         body.dark-mode .message.received .content {
             background-color: #555;
         }
-
         .btn-back {
             position: absolute;
             top: 10px;
@@ -95,11 +82,9 @@
             border-radius: 5px;
             text-decoration: none;
         }
-
         .btn-back:hover {
             background-color: #5a6268;
         }
-
         #darkModeToggle {
             position: fixed;
             top: 10px;
@@ -111,61 +96,61 @@
             color: #007bff;
             transition: color 0.3s ease;
         }
-
         body.dark-mode #darkModeToggle {
             color: #4a90e2;
         }
-
         #darkModeToggle i {
             font-size: 24px;
         }
     </style>
 </head>
 <body>
-
-
     <div class="container mt-4" style="position: relative;">
-        <!-- Bouton retour à l'accueil positionné en haut à gauche -->
         <a href="{{ url_for('index') }}" class="btn btn-secondary btn-back">Retour à l'accueil</a>
-
         <div class="chat-container">
-            <h2>Conversation avec {{ conversation.user_2.username if conversation.user_1.id == current_user.id else conversation.user_1.username }}</h2>
-            
-            <!-- Lien pour consulter le profil -->
-            <a href="{{ url_for('view_profile', user_id=(conversation.user_2.id if conversation.user_1.id == current_user.id else conversation.user_1.id)) }}" 
-                class="btn btn-info mb-3">
-                Voir le profil
-            </a>
-            <!-- Bouton pour lancer un appel -->
-            <div class="call-controls" style="margin-bottom: 15px;">
-                <a href="{{ url_for('call_user', user_id=(conversation.user_2.id if conversation.user_1.id == current_user.id else conversation.user_1.id)) }}" class="btn btn-success">
-                    Lancer un appel
+            <h2>
+                {% if conversation.user_2.is_active == False or conversation.user_1.is_active == False %}
+                    <span>Utilisateur désactivé</span>
+                {% else %}
+                    Conversation avec {{ conversation.user_2.username if conversation.user_1.id == current_user.id else conversation.user_1.username }}
+                {% endif %}
+            </h2>
+
+            {% if conversation.user_2.is_active and conversation.user_1.is_active %}
+                <a href="{{ url_for('view_profile', user_id=(conversation.user_2.id if conversation.user_1.id == current_user.id else conversation.user_1.id)) }}" class="btn btn-info mb-3">
+                    Voir le profil
                 </a>
-            </div>
+                <div class="call-controls" style="margin-bottom: 15px;">
+                    <a href="{{ url_for('call_user', user_id=(conversation.user_2.id if conversation.user_1.id == current_user.id else conversation.user_1.id)) }}" class="btn btn-success">
+                        Lancer un appel
+                    </a>
+                </div>
+            {% endif %}
             
-            <!-- Liste des messages -->
             <div class="message-list">
                 {% for message in messages %}
                     <div class="message {{ 'sent' if message.sender.id == current_user.id else 'received' }}">
-                        <div class="username">{{ message.sender.username }}</div>
+                        <div class="username">{{ message.sender.username if message.sender.is_active else 'Utilisateur désactivé' }}</div>
                         <div class="content">{{ message.content }}</div>
                         <div class="timestamp text-muted" style="font-size: 0.8em;">{{ message.timestamp }}</div>
                     </div>
                 {% endfor %}
             </div>
-            
-            <!-- Formulaire d'envoi de message -->
-            <form action="" method="POST" class="input-group">
-                <input type="text" name="content" class="form-control" placeholder="Tapez votre message" required>
-                <button type="submit" class="btn btn-primary">Envoyer</button>
-            </form>
+
+            {% if conversation.user_2.is_active and conversation.user_1.is_active %}
+                <form action="" method="POST" class="input-group">
+                    <input type="text" name="content" class="form-control" placeholder="Tapez votre message" required>
+                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                </form>
+            {% else %}
+                <p class="text-danger">Vous ne pouvez pas envoyer de messages à un utilisateur désactivé.</p>
+            {% endif %}
         </div>
     </div>
     <script>
         if (localStorage.getItem('dark-mode') === 'enabled') {
             document.body.classList.add('dark-mode');
         }
-        
     </script>
 </body>
 </html>

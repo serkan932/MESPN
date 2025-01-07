@@ -11,6 +11,7 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(150), nullable=False)
     profile_picture = db.Column(db.String(200))
     bio = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True)
 
 class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -178,8 +178,7 @@
 
     </style>
 </head>
-<body class="dark-mode">
-
+<body>
     <h1>Demandes d'amis reçues</h1>
     <ul class="list-unstyled">
         {% for req in requests %}
@@ -210,5 +209,10 @@
         &copy; 2025 MESPN - Tous droits réservés.
     </footer>
 
+    <script>
+        if (localStorage.getItem('dark-mode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
 </body>
 </html>

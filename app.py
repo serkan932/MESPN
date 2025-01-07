@@ -56,7 +56,14 @@ def index():
 
     conversation_data = []
     for conversation in conversations:
+        # Identifier l'autre utilisateur dans la conversation
         other_user = conversation.user_1 if conversation.user_2_id == current_user.id else conversation.user_2
+
+        # Vérifier si l'autre utilisateur existe et est actif
+        if other_user is None or other_user.is_active is False:
+            # Si l'utilisateur est supprimé ou désactivé, ignorer cette conversation
+            continue
+
         unread_count = Message.query.filter_by(conversation_id=conversation.id, is_read=False, sender_id=other_user.id).count()
         
         # Récupérer le dernier message de la conversation
@@ -70,6 +77,7 @@ def index():
         })
 
     return render_template('index.html', user=current_user, users=users, conversation_data=conversation_data)
+
 
 
 @app.route('/toggle_dark_mode', methods=['POST'])
@@ -94,6 +102,7 @@ def login():
             (User.email == identifier) | 
             (User.phone_number == identifier)
         ).first()
+
 
         if user and user.password == password:
             login_user(user)
@@ -226,8 +235,13 @@ def view_profile(user_id):
 @login_required
 def friends():
     friendships = Friend.query.filter_by(user_id=current_user.id).all()
-    friends = [db.session.get(User, friendship.friend_id) for friendship in friendships]
+    # Filtrer les amis existants et actifs uniquement
+    friends = [
+        friend for friendship in friendships
+        if (friend := db.session.get(User, friendship.friend_id)) and friend.is_active
+    ]
     return render_template('friends.html', friends=friends)
+
 
 @app.route('/add_friend', methods=['GET', 'POST'])
 @login_required
@@ -657,10 +671,54 @@ def deactivate_account():
 @app.route('/delete_account', methods=['POST'])
 @login_required
 def delete_account():
+    # Supprimer les messages de l'utilisateur
+    Message.query.filter_by(sender_id=current_user.id).delete()
+
+    # Supprimer les participations aux groupes
+    GroupMember.query.filter_by(user_id=current_user.id).delete()
+
+    # Supprimer les groupes dont l'utilisateur est admin
+    Group.query.filter_by(admin_id=current_user.id).delete()
+
+    # Supprimer les demandes d'amis envoyées ou reçues
+    FriendRequest.query.filter(
+        (FriendRequest.sender_id == current_user.id) | (FriendRequest.receiver_id == current_user.id)
+    ).delete()
+
+    # Supprimer les relations d'amitié
+    Friend.query.filter(
+        (Friend.user_id == current_user.id) | (Friend.friend_id == current_user.id)
+    ).delete()
+
+    # Supprimer les conversations où l'utilisateur est impliqué
+    Conversation.query.filter(
+        (Conversation.user_1_id == current_user.id) | (Conversation.user_2_id == current_user.id)
+    ).delete()
+
+    # Enfin, supprimer l'utilisateur lui-même
     db.session.delete(current_user)
     db.session.commit()
+
     flash('Votre compte a été supprimé avec succès.', 'success')
     return redirect(url_for('index'))
+
+@app.route('/admin/reactivate_user/<int:user_id>', methods=['POST'])
+@login_required
+def reactivate_user(user_id):
+    if not current_user.is_admin:  # Vérifiez si l'utilisateur actuel est un administrateur
+        flash("Vous n'avez pas la permission d'effectuer cette action.", "danger")
+        return redirect(url_for('index'))
+
+    user = User.query.get(user_id)
+    if user:
+        user.is_active = True
+        db.session.commit()
+        flash(f"Le compte de {user.username} a été réactivé.", "success")
+    else:
+        flash("Utilisateur introuvable.", "danger")
+
+    return redirect(url_for('admin_dashboard'))
+
 
 if __name__ == '__main__':
     with app.app_context():

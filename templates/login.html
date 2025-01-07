@@ -33,7 +33,13 @@
             text-align: center;
             position: relative;
         }
-
+        .login-box img {
+            display: block;
+            margin: 0 auto 20px; /* Centrer le logo et espacer du titre */
+            width: 150px; /* Taille du logo */
+            transition: opacity 0.3s ease;
+        }
+        
         .login-box::before {
             content: "";
             position: absolute;
@@ -116,6 +122,12 @@
 
     <div class="login-container">
         <div class="login-box">
+            <img 
+                id="logo" 
+                src="{{ url_for('static', filename='logo-light.png') }}" 
+                alt="Logo" 
+                style="width: 150px; margin-bottom: 20px;"
+            >
             <h1>Connexion</h1>
             <form method="POST" action="{{ url_for('login') }}">
                 <input type="text" name="identifier" placeholder="Pseudo, e-mail ou numéro de téléphone" required>
@@ -129,6 +141,7 @@
     <div class="footer">
         <p>&copy; 2025 MESPN - Tous droits réservés</p>
     </div>
-
+    </body>
+    
 </body>
 </html>
