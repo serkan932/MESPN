@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="{{ url_for('static', filename='dark_mode.js') }}"></script>
     <style>
+        /* Styles existants inchangés */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f9;
@@ -150,6 +151,17 @@
             font-size: 24px;
         }
     </style>
+    <script>
+        function limitGroupSelection() {
+            const checkboxes = document.querySelectorAll('.friends-list input[type="checkbox"]');
+            const selected = Array.from(checkboxes).filter(checkbox => checkbox.checked);
+            
+            if (selected.length > 49) {
+                alert("Vous ne pouvez pas sélectionner plus de 49 amis pour un groupe.");
+                event.target.checked = false; // Décoche la dernière sélection
+            }
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -164,7 +176,12 @@
             <div class="friends-list">
                 {% for friend in friends %}
                     <div class="friend-item">
-                        <input type="checkbox" id="friend_{{ friend.id }}" name="friends" value="{{ friend.id }}">
+                        <input 
+                            type="checkbox" 
+                            id="friend_{{ friend.id }}" 
+                            name="friends" 
+                            value="{{ friend.id }}" 
+                            onchange="limitGroupSelection()">
                         <label for="friend_{{ friend.id }}">{{ friend.username }}</label>
                     </div>
                 {% endfor %}
@@ -181,7 +198,6 @@
         if (localStorage.getItem('dark-mode') === 'enabled') {
             document.body.classList.add('dark-mode');
         }
-        
     </script>
 </body>
 </html>

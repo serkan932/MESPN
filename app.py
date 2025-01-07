@@ -523,16 +523,60 @@ def edit_group(group_id):
     if not group:
         return "Erreur : Groupe introuvable.", 404
 
+    # Vérifier que seul l'administrateur peut modifier le groupe
     if group.admin_id != current_user.id:
         return "Erreur : Seul l'administrateur peut modifier ce groupe.", 403
 
-    if request.method == 'POST':
-        new_name = request.form['group_name']
-        group.name = new_name
-        db.session.commit()
-        return redirect(url_for('groups'))
+    # Récupérer les membres actuels du groupe
+    group_members = db.session.query(User).join(GroupMember).filter(GroupMember.group_id == group_id).all()
 
-    return render_template('edit_group.html', group=group)
+    # Récupérer les amis de l'utilisateur qui ne sont pas encore membres
+    group_member_ids = [member.id for member in group_members]
+    friends = db.session.query(User).join(Friend, Friend.friend_id == User.id).filter(
+        Friend.user_id == current_user.id,
+        ~User.id.in_(group_member_ids)
+    ).all()
+
+    if request.method == 'POST':
+        # Modifier le nom du groupe
+        new_name = request.form.get('group_name')
+        if new_name:
+            group.name = new_name
+
+        # Ajouter un nouveau membre
+        if 'add_member' in request.form:
+            new_member_id = int(request.form['add_member'])
+            if len(group_members) >= 50:
+                flash("Le groupe a déjà atteint sa capacité maximale de 50 membres.", "error")
+            else:
+                # Vérifier que l'utilisateur n'est pas déjà membre
+                if new_member_id not in group_member_ids:
+                    new_member = GroupMember(group_id=group.id, user_id=new_member_id)
+                    db.session.add(new_member)
+                    flash("Membre ajouté avec succès.", "success")
+
+        # Supprimer un membre existant
+        if 'remove_member' in request.form:
+            remove_member_id = int(request.form['remove_member'])
+            # Empêcher la suppression de l'administrateur
+            if remove_member_id == group.admin_id:
+                flash("Vous ne pouvez pas supprimer l'administrateur du groupe.", "error")
+            else:
+                member_to_remove = GroupMember.query.filter_by(group_id=group.id, user_id=remove_member_id).first()
+                if member_to_remove:
+                    db.session.delete(member_to_remove)
+                    flash("Membre supprimé avec succès.", "success")
+
+        db.session.commit()
+        return redirect(url_for('edit_group', group_id=group_id))
+
+    return render_template(
+        'edit_group.html',
+        group=group,
+        group_members=group_members,
+        friends=friends
+        
+    )
 
 
 @app.route('/call/<int:user_id>', methods=['GET'])
@@ -601,6 +645,22 @@ def send_friend_request():
     flash(f"Demande d'ami envoyée à {friend.username}.", "success")
     return redirect(url_for('index'))
 
+@app.route('/deactivate_account', methods=['POST'])
+@login_required
+def deactivate_account():
+    current_user.is_active = False  # Suppose que l'attribut `is_active` existe
+    db.session.commit()
+    flash('Votre compte a été désactivé temporairement.', 'success')
+    logout_user()  # Déconnecte l'utilisateur après désactivation
+    return redirect(url_for('index'))
+
+@app.route('/delete_account', methods=['POST'])
+@login_required
+def delete_account():
+    db.session.delete(current_user)
+    db.session.commit()
+    flash('Votre compte a été supprimé avec succès.', 'success')
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     with app.app_context():
