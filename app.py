@@ -103,13 +103,25 @@ def login():
             (User.phone_number == identifier)
         ).first()
 
+        if user:
+            if user.password == password:
+                # Si le compte est désactivé, on le réactive
+                if not user.is_active:
+                    user.is_active = True
+                    db.session.commit()
+                    flash("Votre compte a été réactivé avec succès.", "success")
 
-        if user and user.password == password:
-            login_user(user)
-            return redirect(url_for('index'))
-        return "Erreur : Identifiants incorrects"
+                # Connecter l'utilisateur
+                login_user(user)
+                flash("Connexion réussie !", "success")
+                return redirect(url_for('index'))
+            else:
+                flash("Mot de passe incorrect.", "danger")
+        else:
+            flash("Utilisateur introuvable.", "danger")
 
     return render_template('login.html')
+
 
 @app.route('/logout')
 @login_required
