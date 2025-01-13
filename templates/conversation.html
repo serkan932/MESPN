@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="{{ url_for('static', filename='dark_mode.js') }}"></script>
     <style>
-        /* Styles existants */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f9f9f9;
@@ -127,7 +126,7 @@
                 </div>
             {% endif %}
             
-            <div class="message-list">
+            <div class="message-list" id="messageList">
                 {% for message in messages %}
                     <div class="message {{ 'sent' if message.sender.id == current_user.id else 'received' }}">
                         <div class="username">{{ message.sender.username if message.sender.is_active else 'Utilisateur désactivé' }}</div>
@@ -138,8 +137,8 @@
             </div>
 
             {% if conversation.user_2.is_active and conversation.user_1.is_active %}
-                <form action="" method="POST" class="input-group">
-                    <input type="text" name="content" class="form-control" placeholder="Tapez votre message" required>
+                <form id="messageForm" class="input-group">
+                    <input type="text" id="messageInput" name="content" class="form-control" placeholder="Tapez votre message" required>
                     <button type="submit" class="btn btn-primary">Envoyer</button>
                 </form>
             {% else %}
@@ -147,10 +146,44 @@
             {% endif %}
         </div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
+        const socket = io();
+        const conversationId = "{{ conversation.id }}";
+        const currentUserId = "{{ current_user.id }}";
+        
+        socket.on('connect', () => {
+            socket.emit('join', {room: conversationId});
+        });
+
+        socket.on('new_message', (data) => {
+            const messageList = document.getElementById('messageList');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${data.sender_id == currentUserId ? 'sent' : 'received'}`;
+            messageDiv.innerHTML = `
+                <div class="username">${data.sender_username}</div>
+                <div class="content">${data.message}</div>
+                <div class="timestamp text-muted" style="font-size: 0.8em;">${new Date(data.timestamp).toLocaleString()}</div>
+            `;
+            messageList.appendChild(messageDiv);
+            messageList.scrollTop = messageList.scrollHeight;
+        });
+
+        document.getElementById('messageForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            if (message) {
+                socket.emit('message', {room: conversationId, message: message});
+                messageInput.value = '';
+            }
+        });
+
         if (localStorage.getItem('dark-mode') === 'enabled') {
             document.body.classList.add('dark-mode');
         }
     </script>
 </body>
 </html>
+

@@ -26,7 +26,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 db.init_app(app)  # Initialise SQLAlchemy avec l'application Flask
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-socketio = SocketIO(app)  # Initialise SocketIO pour les WebSocket
+socketio = SocketIO(app, cors_allowed_origins="*")  # Initialise SocketIO pour les WebSocket
 
 # Crée le dossier des photos de profil s'il n'existe pas
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -428,7 +428,14 @@ def handle_message(data):
     )
     db.session.add(new_message)
     db.session.commit()
-    emit('message', {'sender': current_user.username, 'message': message}, room=room)
+    
+    # Émettez le message à tous les utilisateurs dans la salle
+    emit('new_message', {
+        'sender_id': current_user.id,
+        'sender_username': current_user.username,
+        'message': message,
+        'timestamp': new_message.timestamp.isoformat()
+    }, room=room)
 
 # Serveur UDP
 def start_udp_server():
@@ -483,25 +490,72 @@ def groups():
 @login_required
 def group_chat(group_id):
     group = db.session.get(Group, group_id)
+    if not group:
+        flash("Erreur : Ce groupe n'existe pas.", "error")
+        return redirect(url_for('groups'))
 
     # Vérifiez que l'utilisateur est membre du groupe
     is_member = GroupMember.query.filter_by(group_id=group_id, user_id=current_user.id).first()
     if not is_member:
-        return "Erreur : Vous n'êtes pas membre de ce groupe.", 403
+        flash("Erreur : Vous n'êtes pas membre de ce groupe.", "error")
+        return redirect(url_for('groups'))
 
     if request.method == 'POST':
         content = request.form['content']
         if not content.strip():
-            return "Erreur : Le message ne peut pas être vide.", 400
+            flash("Erreur : Le message ne peut pas être vide.", "error")
+        else:
+            # Ajoutez le message au groupe
+            new_message = Message(group_id=group_id, sender_id=current_user.id, content=content)
+            db.session.add(new_message)
+            db.session.commit()
 
-        # Ajoutez le message au groupe
-        new_message = Message(group_id=group_id, sender_id=current_user.id, content=content)
-        db.session.add(new_message)
-        db.session.commit()
+            # Émettez le nouveau message à tous les membres du groupe
+            socketio.emit('new_group_message', {
+                'sender_id': current_user.id,
+                'sender_username': current_user.username,
+                'message': content,
+                'timestamp': new_message.timestamp.isoformat()
+            }, room=f'group_{group_id}')
 
     # Récupérez tous les messages du groupe
     messages = Message.query.filter_by(group_id=group_id).order_by(Message.timestamp).all()
     return render_template('group_chat.html', group=group, messages=messages)
+
+@socketio.on('join_group')
+def on_join_group(data):
+    group_id = data['group_id']
+    join_room(f'group_{group_id}')
+
+@socketio.on('leave_group')
+def on_leave_group(data):
+    group_id = data['group_id']
+    leave_room(f'group_{group_id}')
+
+@socketio.on('group_message')
+def handle_group_message(data):
+    group_id = data['group_id']
+    message_content = data['message']
+    
+    # Vérifiez que l'utilisateur est membre du groupe
+    is_member = GroupMember.query.filter_by(group_id=group_id, user_id=current_user.id).first()
+    if not is_member:
+        return
+
+    new_message = Message(
+        group_id=group_id,
+        sender_id=current_user.id,
+        content=message_content
+    )
+    db.session.add(new_message)
+    db.session.commit()
+
+    emit('new_group_message', {
+        'sender_id': current_user.id,
+        'sender_username': current_user.username,
+        'message': message_content,
+        'timestamp': new_message.timestamp.isoformat()
+    }, room=f'group_{group_id}')
 
 @app.route('/group/<int:group_id>/leave', methods=['POST'])
 @login_required

@@ -175,22 +175,8 @@
             font-size: 24px;
         }
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const textarea = document.querySelector('textarea');
-            const form = document.querySelector('form');
-
-            textarea.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();  // Empêche l'ajout d'une nouvelle ligne
-                    form.submit();  // Soumet le formulaire
-                }
-            });
-        });
-    </script>
 </head>
 <body>
-
     <div class="container">
         <h1>Discussion dans le groupe : {{ group.name }}</h1>
 
@@ -202,7 +188,7 @@
         </div>
 
         <!-- Liste des messages -->
-        <ul>
+        <ul id="messageList">
             {% for message in messages %}
                 <li>
                     <span>
@@ -218,8 +204,8 @@
 
         <!-- Formulaire pour envoyer un message -->
         {% if current_user.is_active %}
-        <form method="POST">
-            <textarea name="content" placeholder="Votre message..." required></textarea>
+        <form id="messageForm">
+            <textarea id="messageInput" name="content" placeholder="Votre message..." required></textarea>
             <button type="submit">Envoyer</button>
         </form>
         {% else %}
@@ -229,10 +215,55 @@
         <!-- Lien pour retourner aux groupes -->
         <a href="{{ url_for('groups') }}">Retour aux groupes</a>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script>
-        if (localStorage.getItem('dark-mode') === 'enabled') {
-            document.body.classList.add('dark-mode');
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const socket = io();
+            const groupId = "{{ group.id }}";
+            const currentUserId = "{{ current_user.id }}";
+            const messageList = document.getElementById('messageList');
+            const messageForm = document.getElementById('messageForm');
+            const messageInput = document.getElementById('messageInput');
+
+            socket.on('connect', () => {
+                socket.emit('join_group', {group_id: groupId});
+            });
+
+            socket.on('new_group_message', (data) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>
+                        <strong>${data.sender_username}:</strong> 
+                        ${data.message}
+                    </span>
+                    <small>${new Date(data.timestamp).toLocaleString()}</small>
+                `;
+                messageList.appendChild(li);
+                messageList.scrollTop = messageList.scrollHeight;
+            });
+
+            messageForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const message = messageInput.value.trim();
+                if (message) {
+                    socket.emit('group_message', {group_id: groupId, message: message});
+                    messageInput.value = '';
+                }
+            });
+
+            messageInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    messageForm.dispatchEvent(new Event('submit'));
+                }
+            });
+
+            if (localStorage.getItem('dark-mode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+            }
+        });
     </script>
 </body>
 </html>
+
