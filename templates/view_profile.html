@@ -72,9 +72,9 @@
 <body>
     <div class="container text-center">
         <img 
-            class="profile-picture" 
-            src="{{ url_for('static', filename='photos_profil/' + user.profile_picture.split('/')[-1]) if user.profile_picture else url_for('static', filename='icone-profil-avatar-par-defaut-image-utilisateur-medias-sociaux-icone-avatar-gris-silhouette-profil-vierge-illustration-vectorielle_561158-3467.avif') }}" 
-            alt="Photo de profil"
+        class="profile-picture" 
+        src="{{ get_profile_picture(user) }}" 
+        alt="Photo de profil"
         />
         <h1>{{ user.username }}</h1>
         <p>{{ user.bio or "Aucune bio disponible." }}</p>
