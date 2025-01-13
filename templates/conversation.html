@@ -35,8 +35,10 @@
         }
         .message-list {
             max-height: 400px;
-            overflow-y: scroll;
+            overflow-y: auto;
             margin-bottom: 20px;
+            padding-right: 15px;
+            box-sizing: content-box;
         }
         .message {
             margin-bottom: 15px;
@@ -101,6 +103,34 @@
         #darkModeToggle i {
             font-size: 24px;
         }
+
+
+        .btn-info {
+            position: relative;
+            padding: 8px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 160px;
+            display: block;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #0056b3, #004494);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-info:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }       
     </style>
 </head>
 <body>
@@ -115,16 +145,16 @@
                 {% endif %}
             </h2>
 
-            {% if conversation.user_2.is_active and conversation.user_1.is_active %}
-                <a href="{{ url_for('view_profile', user_id=(conversation.user_2.id if conversation.user_1.id == current_user.id else conversation.user_1.id)) }}" class="btn btn-info mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <a href="{{ url_for('view_profile', user_id=(conversation.user_2.id if conversation.user_1.id == current_user.id else conversation.user_1.id)) }}" class="btn btn-info">
                     Voir le profil
                 </a>
-                <div class="call-controls" style="margin-bottom: 15px;">
+                {% if conversation.user_2.is_active and conversation.user_1.is_active %}
                     <a href="{{ url_for('call_user', user_id=(conversation.user_2.id if conversation.user_1.id == current_user.id else conversation.user_1.id)) }}" class="btn btn-success">
-                        Lancer un appel
+                        <i class="fas fa-phone"></i> Lancer un appel
                     </a>
-                </div>
-            {% endif %}
+                {% endif %}
+            </div>
             
             <div class="message-list" id="messageList">
                 {% for message in messages %}
@@ -186,4 +216,3 @@
     </script>
 </body>
 </html>
-

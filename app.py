@@ -768,6 +768,7 @@ def delete_account():
     flash('Votre compte a été supprimé avec succès.', 'success')
     return redirect(url_for('index'))
 
+#reactiver utilisateur
 @app.route('/admin/reactivate_user/<int:user_id>', methods=['POST'])
 @login_required
 def reactivate_user(user_id):
